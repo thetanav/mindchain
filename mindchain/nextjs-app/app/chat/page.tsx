@@ -30,6 +30,42 @@ const suggestedPrompts = [
 export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Build journal context from localStorage for AI
+  const [journalContext, setJournalContext] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("journalEntries:v1")
+          : null;
+      const list: any[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) return;
+      // Sort newest first and take the most recent 8 entries
+      list.sort((a, b) => (b?.createdAt ?? 0) - (a?.createdAt ?? 0));
+      const recent = list.slice(0, 8);
+      const perEntryLimit = 400;
+      const lines = recent.map((e: any) => {
+        const date =
+          (e?.dateISO && new Date(e.dateISO).toISOString().slice(0, 10)) || "";
+        const content: string = String(e?.content ?? "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const trimmed =
+          content.length > perEntryLimit
+            ? content.slice(0, perEntryLimit) + "…"
+            : content;
+        return `- [${date}] ${trimmed}`;
+      });
+      const header = "Recent journal entries:";
+      const context = [header, ...lines].join("\n");
+      // Cap overall length to avoid large payloads
+      setJournalContext(context.slice(0, 3000));
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
+
   const {
     messages,
     input,
@@ -39,6 +75,7 @@ export default function ChatPage() {
     setInput,
   } = useChat({
     api: "/api/chat",
+    body: { journalContext },
   });
 
   const scrollToBottom = () => {
