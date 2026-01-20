@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, MessageCircle, Sparkles } from "lucide-react";
-import { useChat } from "@ai-sdk/react";
+import { useChat, fetchServerSentEvents } from "@tanstack/ai-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,7 +29,7 @@ const suggestedPrompts = [
 
 export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const [input, setInput] = useState("");
   // Build journal context from localStorage for AI
   const [journalContext, setJournalContext] = useState("");
 
@@ -66,20 +66,23 @@ export default function ChatPage() {
     }
   }, []);
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    setInput,
-  } = useChat({
-    api: "/api/chat",
-    body: { journalContext },
+  const { messages, sendMessage, isLoading, error } = useChat({
+    connection: fetchServerSentEvents("/api/chat"),
+    body: {
+      journalContext,
+    },
   });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim() && !isLoading) {
+      sendMessage(input);
+      setInput("");
+    }
   };
 
   useEffect(() => {
@@ -144,57 +147,59 @@ export default function ChatPage() {
               </motion.div>
             )}
 
-            <AnimatePresence initial={false}>
-              {messages.map((message: any) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`flex gap-3 mb-6 ${message.role === "user" ? "justify-end" : "justify-start"
+            {error && (
+              <div className="mb-4 text-sm text-red-500">
+                {error.message || "Something went wrong while talking to the AI."}
+              </div>
+            )}
+
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 mb-6 ${message.role === "user" ? "justify-end" : "justify-start"
+                  }`}>
+                {message.role === "assistant" && (
+                  <Avatar className="h-8 w-8 mt-1">
+                    <AvatarFallback className="bg-muted">
+                      <Bot className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+
+                <div
+                  className={`flex flex-col max-w-[80%] ${message.role === "user" ? "items-end" : "items-start"
                     }`}>
-                  {message.role === "assistant" && (
-                    <Avatar className="h-8 w-8 mt-1">
-                      <AvatarFallback className="bg-muted">
-                        <Bot className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-
                   <div
-                    className={`flex flex-col max-w-[80%] ${message.role === "user" ? "items-end" : "items-start"
+                    className={`rounded-lg px-4 py-3 ${message.role === "user"
+                      ? "bg-foreground text-background"
+                      : "bg-muted"
                       }`}>
-                    <div
-                      className={`rounded-lg px-4 py-3 ${message.role === "user"
-                        ? "bg-foreground text-background"
-                        : "bg-muted"
-                        }`}>
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                        {message.content}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(message.createdAt)}
-                      </span>
-                      {message.role === "assistant" && (
-                        <Badge variant="secondary" className="text-xs">
-                          AI
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
 
-                  {message.role === "user" && (
-                    <Avatar className="h-8 w-8 mt-1">
-                      <AvatarFallback className="bg-foreground text-background">
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    {message.parts.map((part, idx) => {
+                      if (part.type === "thinking") {
+                        return (
+                          <div key={idx} className="text-sm text-gray-500 italic">
+                            💭 Thinking: {part.content}
+                          </div>
+                        );
+                      }
+                      if (part.type === "text") {
+                        return <span key={idx}>{part.content}</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+
+                {message.role === "user" && (
+                  <Avatar className="h-8 w-8 mt-1">
+                    <AvatarFallback className="bg-foreground text-background">
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            ))}
 
             {isLoading && (
               <motion.div
@@ -232,7 +237,7 @@ export default function ChatPage() {
                 <Textarea
                   placeholder="Share what's on your mind..."
                   value={input}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInput(e.target.value)}
                   className="min-h-[44px] max-h-32 resize-none border-border focus:border-foreground"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
