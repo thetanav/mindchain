@@ -10,13 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-
-type Message = {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-};
+import { Streamdown } from "streamdown";
 
 const suggestedPrompts = [
   "I'm feeling anxious today",
@@ -184,7 +178,12 @@ export default function ChatPage() {
                         );
                       }
                       if (part.type === "text") {
-                        return <span key={idx}>{part.content}</span>;
+                        // return <span key={idx}>{part.content}</span>;
+                        return <Streamdown
+                          key={idx}
+                        >
+                          {part.content}
+                        </Streamdown>
                       }
                       return null;
                     })}
