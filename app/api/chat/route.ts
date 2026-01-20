@@ -1,6 +1,6 @@
 import { chat, toServerSentEventsResponse } from "@tanstack/ai";
 import { ollamaText } from "@tanstack/ai-ollama";
-// import { geminiText } from "@tanstack/ai-gemini";
+import { geminiText } from "@tanstack/ai-gemini";
 
 export async function POST(request: Request) {
   try {
@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     const { messages = [], conversationId, journalContext = "" } = body ?? {};
 
     const stream = chat({
-      // adapter: geminiText("gemini-2.0-flash-lite"),
-      adapter: ollamaText("gemma3:1b"),
+      adapter: geminiText("gemini-2.0-flash-lite"),
+      // adapter: ollamaText("gemma3:1b"),
       systemPrompts: [
         `You are an expert mental health therapist. Help user with mental health issues. Respond in plain text (no markdown), concise and supportive.
 If provided, consider the user's recent journal entries to personalize your guidance.

@@ -258,7 +258,7 @@ export default function ChatPage() {
             <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                <span>Secure & confidential</span>
+                <span>Secure & confidential. AI has access to your journals to answer better.</span>
               </div>
               <span>Press Enter to send, Shift+Enter for new line</span>
             </div>

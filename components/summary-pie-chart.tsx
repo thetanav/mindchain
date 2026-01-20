@@ -17,7 +17,7 @@ type Slice = {
 
 const data: Slice[] = [
   { name: "Laziness", value: 35 },
-  { name: "Lack of Stress", value: 15 },
+  { name: "Stress", value: 15 },
   { name: "Anxiety", value: 25 },
   { name: "Depression", value: 25 },
 ];
