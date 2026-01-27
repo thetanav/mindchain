@@ -9,7 +9,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
-import { fetchServerSentEvents } from "@tanstack/ai-react";
+import { postSseJson } from "@/lib/sse";
 import { Streamdown } from "streamdown";
 
 interface Question {
@@ -190,19 +190,19 @@ export default function CheckPage() {
         setLoadingAI(true);
         setAiError(null);
         
-        const stream = fetchServerSentEvents("/api/quiz-insights", {
-          method: "POST",
-          body: {
+        const stream = postSseJson<{ type: string; content?: string }>(
+          "/api/quiz-insights",
+          {
             answers,
             questions: questions.map((q) => q.text),
             journalContext,
-          },
-        });
+          }
+        );
 
         let fullText = "";
         for await (const chunk of stream) {
           if (chunk.type === "text-delta") {
-            fullText += chunk.content;
+            fullText += chunk.content ?? "";
             setAiData(fullText);
           }
         }

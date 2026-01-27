@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { Toaster } from "@/components/ui/toaster";
-import NextTopLoader from 'nextjs-toploader';
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 const inter = Bricolage_Grotesque({
@@ -34,16 +34,16 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html>
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${inter.variable} ${serif.variable} font-sans antialiased min-h-screen`}>
           <ThemeProvider
             attribute="class"
-            forcedTheme="light"
-            enableSystem={false}
+            defaultTheme="system"
+            enableSystem
             disableTransitionOnChange>
             <ConvexClientProvider>
-              <NextTopLoader />
+              <NextTopLoader color="#2563eb" showSpinner={false} />
               {children}
             </ConvexClientProvider>
             <Toaster />

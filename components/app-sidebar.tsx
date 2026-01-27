@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sidebar,
   SidebarContent,
@@ -11,23 +13,26 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/nextjs";
-import { CircleCheck, Bot, Files, Globe, Home, Album, AudioWaveform, Layers, BrainCircuit, LogIn } from "lucide-react";
-import Image from "next/image"
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { CircleCheck, Bot, Files, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn } from "lucide-react";
 import Link from "next/link"
+import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
+import { ModeToggle } from "@/components/theme-mode";
 
 const routes = [
-  { href: "/home", icon: <Home className="w-4" />, label: "Home" },
-  { href: "/chat", icon: <Bot className="w-4" />, label: "AI Chat" },
-  { href: "/documents", icon: <Files className="w-4" />, label: "Documents" },
-  { href: "/community", icon: <Globe className="w-4" />, label: "Community" },
-  { href: "/check", icon: <CircleCheck className="w-4" />, label: "Quiz" },
-  { href: "/relaxo", icon: <AudioWaveform className="w-4" />, label: "Relaxo" },
-  { href: "/journal", icon: <Album className="w-4" />, label: "Journal" },
-];
+  { href: "/home", icon: Home, label: "Home" },
+  { href: "/chat", icon: Bot, label: "AI Chat" },
+  { href: "/documents", icon: Files, label: "Documents" },
+  { href: "/community", icon: Globe, label: "Community" },
+  { href: "/check", icon: CircleCheck, label: "Quiz" },
+  { href: "/relaxo", icon: AudioWaveform, label: "Relaxo" },
+  { href: "/journal", icon: Album, label: "Journal" },
+] as const;
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -36,7 +41,10 @@ export function AppSidebar() {
             <BrainCircuit />
             <h2 className="text-xl font-bold">MindChain</h2>
           </Link>
-          <SidebarTrigger />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <SidebarTrigger />
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -46,11 +54,15 @@ export function AppSidebar() {
             <SidebarMenu>
               {routes.map(r => (
                 <SidebarMenuItem key={r.label}>
-                  <SidebarMenuButton asChild>
-                    <a href={r.href}>
-                      {r.icon}
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === r.href || pathname?.startsWith(`${r.href}/`)}
+                    tooltip={r.label}
+                  >
+                    <Link href={r.href}>
+                      <r.icon className="w-4" />
                       <span>{r.label}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -61,10 +73,12 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SignedOut>
-          <Button>
-            <LogIn />
-            <SignInButton />
-          </Button>
+          <SignInButton mode="modal">
+            <Button className="w-full justify-start gap-2">
+              <LogIn className="w-4" />
+              Sign in
+            </Button>
+          </SignInButton>
         </SignedOut>
         <SignedIn>
           <UserButton />

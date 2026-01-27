@@ -145,7 +145,7 @@ export default function ChatPage() {
                       if (part.type === "thinking") {
                         return (
                           <div key={idx} className="text-sm text-gray-500 italic">
-                            💭 Thinking: {part.content}
+                            Thinking: {part.content}
                           </div>
                         );
                       }

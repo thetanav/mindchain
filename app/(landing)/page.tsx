@@ -2,13 +2,10 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowUpRight, Brain, Users, Sparkles, MessageCircle, PenTool, Wind, Activity } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Brain, Users, MessageCircle, PenTool, Wind, Activity } from "lucide-react";
 import { Instrument_Serif } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import { AnimatedGradient } from "@/components/animated-gradient";
-import { Particles } from "@/components/magicui/particles";
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
@@ -19,12 +16,6 @@ const serif = Instrument_Serif({
 });
 
 export default function Page() {
-  const { resolvedTheme } = useTheme();
-  const [color, setColor] = useState("#ffffff");
-  useEffect(() => {
-    setColor(resolvedTheme === "dark" ? "#ffffff" : "#000000");
-  }, [resolvedTheme]);
-
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden">
       {/* Hero Section */}
@@ -209,7 +200,6 @@ export default function Page() {
 
       {/* CTA Section */}
       <section className="py-24 px-4 bg-blue-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <h2 className={`text-4xl md:text-5xl font-bold mb-8 ${serif.className}`}>
             Ready to Prioritize Your Mind?

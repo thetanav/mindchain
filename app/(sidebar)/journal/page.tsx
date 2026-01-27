@@ -27,6 +27,7 @@ import { Sparkles, Loader2, Calendar, Save, RotateCw, PenLine } from "lucide-rea
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import { postSseJson } from "@/lib/sse";
 
 function formatDate(createdAt: number) {
   const d = new Date(createdAt);
@@ -69,23 +70,17 @@ export default function Page() {
     setCurrentAnalysis("");
 
     try {
-      const response = await fetch("/api/analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: draft }),
-      });
+      const stream = postSseJson<{ type: string; content?: string }>(
+        "/api/analysis",
+        { prompt: draft }
+      );
 
-      if (!response.ok) throw new Error("Analysis failed");
-      
-      const reader = response.body?.getReader();
-      if (!reader) return;
-      
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value);
-        setCurrentAnalysis(prev => prev + text);
+      let fullText = "";
+      for await (const chunk of stream) {
+        if (chunk.type === "text-delta") {
+          fullText += chunk.content ?? "";
+          setCurrentAnalysis(fullText);
+        }
       }
     } catch (error) {
       console.error(error);
