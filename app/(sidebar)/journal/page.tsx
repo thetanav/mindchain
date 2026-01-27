@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Textarea } from "../../components/ui/textarea";
-import { Button } from "../../components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -17,11 +21,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-} from "../../components/ui/dialog";
+} from "@/components/ui/dialog";
+import { Sparkles, Loader2, Calendar } from "lucide-react";
 
 type JournalEntry = {
   id: string;
   content: string;
+  analysis?: string;
   dateISO: string; // YYYY-MM-DD for display/grouping
   createdAt: number; // epoch ms
 };
@@ -41,8 +47,9 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 function formatDate(dateISO: string) {
   const d = new Date(dateISO);
   return d.toLocaleDateString(undefined, {
+    weekday: "long",
     year: "numeric",
-    month: "short",
+    month: "long",
     day: "numeric",
   });
 }
@@ -53,13 +60,15 @@ function makeId() {
       typeof globalThis !== "undefined" ? (globalThis as any) : undefined;
     const uuid = g?.crypto?.randomUUID?.();
     if (uuid) return uuid;
-  } catch {}
+  } catch { }
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export default function Page() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [draft, setDraft] = useState("");
+  const [currentAnalysis, setCurrentAnalysis] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Load from localStorage on mount
@@ -94,77 +103,167 @@ export default function Page() {
     const entry: JournalEntry = {
       id: makeId(),
       content: draft.trim(),
+      analysis: currentAnalysis,
       dateISO: now.toISOString().slice(0, 10),
       createdAt: now.getTime(),
     };
     setEntries((prev) => [entry, ...prev]);
     setDraft("");
+    setCurrentAnalysis("");
+  };
+
+  const analyzeEntry = async () => {
+    if (!draft.trim()) return;
+    setIsAnalyzing(true);
+    setCurrentAnalysis("");
+
+    try {
+      const response = await fetch("/api/analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: draft }),
+      });
+
+      if (!response.ok) throw new Error("Analysis failed");
+      if (!response.body) throw new Error("No response body");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        const lines = chunkValue.split("\n");
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.textDelta) {
+                setCurrentAnalysis((prev) => prev + parsed.textDelta);
+              } else if (typeof parsed === 'string') {
+                setCurrentAnalysis((prev) => prev + parsed);
+              }
+            } catch (e) { }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold tracking-tight">Your Journal</h1>
-      <p className="text-muted-foreground mt-1">
-        Reflect on your thoughts and feelings
-      </p>
+    <div className="container py-8 max-w-5xl mx-auto space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Journal</h1>
+        <p className="text-muted-foreground">
+          Capture your thoughts, find clarity.
+        </p>
+      </div>
 
-      <div className="mt-6 grid gap-3">
+      <div className="grid gap-4">
         <Textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Write today's thoughts…"
-          className="min-h-[140px]"
+          placeholder="How are you feeling today?"
+          className="min-h-[200px] text-lg p-4 resize-y"
         />
+
+        {currentAnalysis && (
+          <Alert className="bg-primary/5 border-primary/20">
+            <Sparkles className="h-4 w-4" />
+            <AlertTitle>AI Reflection</AlertTitle>
+            <AlertDescription className="mt-2 whitespace-pre-wrap leading-relaxed">
+              {currentAnalysis}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="flex items-center justify-between">
           <div className="text-xs text-muted-foreground">
             {draft.length > 0 ? `${draft.length} characters` : ""}
           </div>
-          <Button onClick={handleSave} disabled={!canSave}>
-            Save Note
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={analyzeEntry}
+              disabled={isAnalyzing || draft.length < 10}
+            >
+              {isAnalyzing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Analyze
+            </Button>
+            <Button onClick={handleSave} disabled={!canSave}>
+              Save Note
+            </Button>
+          </div>
         </div>
       </div>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold mb-3">Your notes</h2>
+      <Separator />
+
+      <section>
         {mounted && entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No entries yet. Your saved notes will appear here.
-          </p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              Your journal is empty. Start writing above.
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {entries.map((entry) => (
               <Dialog key={entry.id}>
                 <DialogTrigger asChild>
-                  <Card className="cursor-pointer transition-shadow hover:shadow-md">
-                    <CardHeader className="space-y-1">
-                      <CardTitle className="text-base font-medium line-clamp-1">
-                        {entry.content.split("\n")[0]}
-                      </CardTitle>
-                      <div>
-                        <Badge variant="secondary" className="text-[10px]">
-                          {formatDate(entry.dateISO)}
-                        </Badge>
-                      </div>
+                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors h-full flex flex-col">
+                    <CardHeader>
+                      <CardDescription>
+                        {formatDate(entry.dateISO)}
+                      </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
+                    <CardContent className="flex-1">
+                      <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed whitespace-pre-wrap">
                         {entry.content}
                       </p>
                     </CardContent>
+                    {entry.analysis && (
+                      <CardFooter>
+                        <Badge variant="secondary" className="gap-1">
+                          <Sparkles className="h-3 w-3" /> AI Analyzed
+                        </Badge>
+                      </CardFooter>
+                    )}
                   </Card>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Journal entry</DialogTitle>
+                    <DialogTitle>{formatDate(entry.dateISO)}</DialogTitle>
                     <DialogDescription>
-                      {formatDate(entry.dateISO)}
+                      Journal Entry
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <pre className="whitespace-pre-wrap text-sm">
-                      {entry.content}
-                    </pre>
+                  <div className="space-y-6 mt-4">
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-wrap text-base leading-relaxed">
+                        {entry.content}
+                      </p>
+                    </div>
+                    {entry.analysis && (
+                      <Alert className="bg-muted">
+                        <Sparkles className="h-4 w-4" />
+                        <AlertTitle>AI Reflection</AlertTitle>
+                        <AlertDescription className="mt-2 whitespace-pre-wrap">
+                          {entry.analysis}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>

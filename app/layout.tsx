@@ -29,7 +29,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html>
         <body
-          className={`${inter.variable} font-sans antialiased min-h-screen re`}>
+          className={`${inter.variable} font-sans antialiased min-h-screen`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
