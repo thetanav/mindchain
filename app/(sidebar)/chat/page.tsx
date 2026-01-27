@@ -97,12 +97,12 @@ export default function ChatPage() {
   const isEmptyChat = messages.length === 0;
 
   return (
-    <div className="h-screen pt-24 bg-background">
+    <div className="h-screen">
       <div className="container mx-auto max-w-4xl h-full flex flex-col">
         {/* Chat Container */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex-1 overflow-y-auto py-4">
             {isEmptyChat && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -141,32 +141,18 @@ export default function ChatPage() {
               </motion.div>
             )}
 
-            {error && (
-              <div className="mb-4 text-sm text-red-500">
-                {error.message || "Something went wrong while talking to the AI."}
-              </div>
-            )}
-
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-3 mb-6 ${message.role === "user" ? "justify-end" : "justify-start"
                   }`}>
-                {message.role === "assistant" && (
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-muted">
-                      <Bot className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-
                 <div
                   className={`flex flex-col max-w-[80%] ${message.role === "user" ? "items-end" : "items-start"
                     }`}>
                   <div
                     className={`rounded-lg px-4 py-3 ${message.role === "user"
-                      ? "bg-foreground text-background"
-                      : "bg-muted"
+                      && "bg-foreground text-background"
+
                       }`}>
 
                     {message.parts.map((part, idx) => {
@@ -189,55 +175,21 @@ export default function ChatPage() {
                     })}
                   </div>
                 </div>
-
-                {message.role === "user" && (
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-foreground text-background">
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
               </div>
             ))}
-
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex gap-3 mb-6">
-                <Avatar className="h-8 w-8 mt-1">
-                  <AvatarFallback className="bg-muted">
-                    <Bot className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="bg-muted rounded-lg px-4 py-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                    <div
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    />
-                    <div
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
 
             <div ref={messagesEndRef} />
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-border px-6 py-4">
+          <div className="border p-3 m-1 rounded-lg">
             <form onSubmit={handleSubmit} className="flex gap-3">
               <div className="flex-1">
-                <Textarea
+                <textarea
                   placeholder="Share what's on your mind..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[44px] max-h-32 resize-none border-border focus:border-foreground"
+                  className="min-h-[60px] max-h-32 resize-none border-none w-full focus:outline-none p-0 text-primary placeholder:text-muted-foreground bg-background"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -255,7 +207,7 @@ export default function ChatPage() {
               </Button>
             </form>
 
-            <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                 <span>Secure & confidential. AI has access to your journals to answer better.</span>

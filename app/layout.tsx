@@ -3,14 +3,10 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/components/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { dark, shadcn } from "@clerk/themes";
+import NextTopLoader from 'nextjs-toploader';
 import "./globals.css";
-import Image from "next/image";
-import Link from "next/link";
 
 const inter = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -40,7 +36,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange>
             <AuthProvider>
-              <Navbar />
+              <NextTopLoader />
               {children}
             </AuthProvider>
             <Toaster />

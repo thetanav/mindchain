@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Brain, Shield, Users } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Brain, Shield, Users } from "lucide-react";
 import { Instrument_Serif } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import { AnimatedGradient } from "@/components/animated-gradient";
@@ -48,17 +48,21 @@ export default function Page() {
           <div className="flex flex-wrap justify-center gap-4 mt-10">
             <Button size="lg" asChild>
               <Link href="/chat">
-                Start Anonymous Chat <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowUpRight className="h-4 w-4" />
+                Get Started
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <Link href="/dashboard">View Dashboard</Link>
+              <Link href="#read">
+                <ArrowDown className="h-4 w-4" />
+                Read Below
+              </Link>
             </Button>
           </div>
         </motion.div>
       </section>
 
-      <section className="py-20 px-4">
+      <section className="py-20 px-4" id="read">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

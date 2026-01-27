@@ -16,7 +16,7 @@ export function Footer() {
         </div>
         <div className="flex gap-4 items-center justify-center">
           <Link
-            href="https://twitter.com"
+            href="https://x.com/tanavtwt"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-primary">
@@ -24,7 +24,7 @@ export function Footer() {
             <span className="sr-only">Twitter</span>
           </Link>
           <Link
-            href="https://github.com"
+            href="https://github.com/thetanav"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-primary">

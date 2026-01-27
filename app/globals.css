@@ -37,13 +37,13 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --sidebar: oklch(0.9911 0 0);
-    --sidebar-foreground: oklch(0.5452 0 0);
-    --sidebar-primary: oklch(0.8348 0.1302 160.908);
-    --sidebar-primary-foreground: oklch(0.2626 0.0147 166.4589);
-    --sidebar-accent: oklch(0.9461 0 0);
-    --sidebar-accent-foreground: oklch(0.2435 0 0);
-    --sidebar-border: oklch(0.9037 0 0);
-    --sidebar-ring: oklch(0.8348 0.1302 160.908);
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     --font-sans: Outfit, sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: monospace;
@@ -68,6 +68,7 @@
     --color-3: oklch(69.6% 0.165 251);
     --color-4: oklch(80.2% 0.134 225);
     --color-5: oklch(90.7% 0.231 133);
+    --sidebar-background: 0 0% 98%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -95,13 +96,13 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --sidebar: oklch(0.1822 0 0);
-    --sidebar-foreground: oklch(0.6301 0 0);
-    --sidebar-primary: oklch(0.4365 0.1044 156.7556);
-    --sidebar-primary-foreground: oklch(0.9213 0.0135 167.1556);
-    --sidebar-accent: oklch(0.3132 0 0);
-    --sidebar-accent-foreground: oklch(0.9851 0 0);
-    --sidebar-border: oklch(0.2809 0 0);
-    --sidebar-ring: oklch(0.8003 0.1821 151.711);
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     --font-sans: Outfit, sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: monospace;
@@ -124,6 +125,7 @@
     --color-3: oklch(69.6% 0.165 251);
     --color-4: oklch(80.2% 0.134 225);
     --color-5: oklch(90.7% 0.231 133);
+    --sidebar-background: 240 5.9% 10%;
   }
   .theme {
     --font-sans: Outfit, sans-serif;
