@@ -1,12 +1,12 @@
 import { chat, toServerSentEventsResponse } from "@tanstack/ai";
-import { geminiText } from "@tanstack/ai-gemini";
+import { adapter } from "@/lib/ai";
 
 export async function POST(req: Request) {
   try {
     const { prompt, journalContext }: { prompt: string; journalContext?: string } = await req.json();
 
     const stream = chat({
-      adapter: geminiText("gemini-1.5-flash"),
+      adapter,
       systemPrompts: [
         `You are an empathetic mental health AI assistant.
 Analyze the following journal entry.

@@ -1,5 +1,5 @@
 import { chat, toServerSentEventsResponse } from "@tanstack/ai";
-import { geminiText } from "@tanstack/ai-gemini";
+import { adapter } from "@/lib/ai";
 
 export async function POST(req: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const { messages = [], conversationId, journalContext = "" } = body ?? {};
 
     const stream = chat({
-      adapter: geminiText("gemini-1.5-flash"),
+      adapter,
       systemPrompts: [
         `You are MindChain, an empathetic and supportive mental health companion.
 Your goal is to listen, validate feelings, and offer gentle, practical advice.

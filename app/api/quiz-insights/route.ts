@@ -1,33 +1,39 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/server";
+import { chat, toServerSentEventsResponse } from "@tanstack/ai";
+import { adapter } from "@/lib/ai";
 
 export async function POST(req: Request) {
-  const { answers, questions, journalContext }: { answers: string[]; questions?: string[]; journalContext?: string } =
-    await req.json();
+  try {
+    const { answers, questions, journalContext }: { answers: string[]; questions?: string[]; journalContext?: string } =
+      await req.json();
 
-  const paired = answers
-    .map(
-      (a, i) => `Q${i + 1}: ${questions?.[i] ?? "(question)"}\nA${i + 1}: ${a}`
-    )
-    .join("\n\n");
+    const paired = answers
+      .map(
+        (a, i) => `Q${i + 1}: ${questions?.[i] ?? "(question)"}\nA${i + 1}: ${a}`
+      )
+      .join("\n\n");
 
-  const prompt = `You are a supportive mental health assistant. Given the user's self-check responses, provide empathetic, practical insights.
-If provided, consider the user's recent journal entries to personalize your guidance.
-
-User Responses:
+    const userPrompt = `User Responses:
     
 ${paired}
 
 ${journalContext ? `Recent Journal Context:\n${journalContext}\n-- End of Journal Context --` : ''}
 
-Analyze the user's mental health check responses. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.`;
+Analyze the user's mental health check responses. Provide empathetic, practical insights. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.`;
 
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const stream = chat({
+      adapter,
+      systemPrompts: ["You are a supportive mental health assistant. Analyze the user's check-in responses and provide empathetic insights."],
+      messages: [
+        { role: "user", content: userPrompt }
+      ]
+    });
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-
-  return NextResponse.json(text);
+    return toServerSentEventsResponse(stream);
+  } catch (error) {
+    console.error("Error in /api/quiz-insights:", error);
+    return new Response(JSON.stringify({ error: "Failed to generate insights" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }

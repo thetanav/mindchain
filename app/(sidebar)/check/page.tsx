@@ -9,6 +9,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
+import { fetchServerSentEvents } from "@tanstack/ai-react";
+import { Streamdown } from "streamdown";
 
 interface Question {
   id: number;
@@ -187,30 +189,32 @@ export default function CheckPage() {
       try {
         setLoadingAI(true);
         setAiError(null);
-        const res = await fetch("/api/quiz-insights", {
+        
+        const stream = fetchServerSentEvents("/api/quiz-insights", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+          body: {
             answers,
             questions: questions.map((q) => q.text),
             journalContext,
-          }),
+          },
         });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const json = await res.json();
-        // Ensure we store a string to display
-        const text =
-          typeof json === "string"
-            ? json
-            : json?.insights ?? JSON.stringify(json);
-        setAiData(text);
+
+        let fullText = "";
+        for await (const chunk of stream) {
+          if (chunk.type === "text-delta") {
+            fullText += chunk.content;
+            setAiData(fullText);
+          }
+        }
         
-        // Save to Convex
-        await saveCheckIn({
-            userId: user.id,
-            answers: answers,
-            insight: text,
-        });
+        // Save to Convex after stream is done
+        if (fullText) {
+          await saveCheckIn({
+              userId: user.id,
+              answers: answers,
+              insight: fullText,
+          });
+        }
         
       } catch (err: any) {
         setAiError(err?.message ?? "Something went wrong");
@@ -277,7 +281,7 @@ export default function CheckPage() {
                     </h3>
                   </div>
 
-                  {loadingAI && (
+                  {loadingAI && !aiData && (
                     <div className="flex flex-col gap-3">
                        <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
                        <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
@@ -287,7 +291,9 @@ export default function CheckPage() {
                   {aiError && <p className="text-sm text-red-500">{aiError}</p>}
                   {aiData && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <p className="leading-relaxed text-foreground/90 whitespace-pre-wrap">{aiData}</p>
+                      <div className="leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                        <Streamdown>{aiData}</Streamdown>
+                      </div>
                     </motion.div>
                   )}
                 </div>
