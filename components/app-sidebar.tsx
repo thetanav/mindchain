@@ -9,9 +9,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/nextjs";
-import { CircleCheck, Bot, Files, Globe, Home, Album, AudioWaveform, Layers, BrainCircuit } from "lucide-react";
+import { CircleCheck, Bot, Files, Globe, Home, Album, AudioWaveform, Layers, BrainCircuit, LogIn } from "lucide-react";
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "./ui/button";
@@ -28,13 +29,14 @@ const routes = [
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center px-2 py-4">
-            <BrainCircuit className="mr-2" />
+        <div className="flex items-center justify-between px-2 py-4">
+          <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+            <BrainCircuit />
             <h2 className="text-xl font-bold">MindChain</h2>
           </Link>
+          <SidebarTrigger />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -59,14 +61,13 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SignedOut>
-          <Button asChild>
+          <Button>
+            <LogIn />
             <SignInButton />
           </Button>
         </SignedOut>
         <SignedIn>
-          <div className="border px-3 py-2 rounded-lg flex items-center justify-between bg-background">
-            <UserButton />
-          </div>
+          <UserButton />
         </SignedIn>
       </SidebarFooter>
     </Sidebar>

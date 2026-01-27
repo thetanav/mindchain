@@ -2,8 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RotateCw, Sparkles } from "lucide-react";
+import { RotateCw, Sparkles, CheckCircle2 } from "lucide-react";
 import { Confetti, ConfettiRef } from "@/components/magicui/confetti";
+import { useUser } from "@clerk/nextjs";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { Progress } from "@/components/ui/progress";
 
 interface Question {
   id: number;
@@ -80,47 +85,28 @@ const questions: Question[] = [
 ];
 
 export default function CheckPage() {
+  const { user } = useUser();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiData, setAiData] = useState<string | null>(null);
-  // Build journal context from localStorage for AI
+  
+  // Fetch journal context
+  const journalEntries = useQuery(api.journal.getEntries, user ? { userId: user.id } : "skip");
+  const saveCheckIn = useMutation(api.checkins.saveResult);
+  
   const [journalContext, setJournalContext] = useState("");
 
   useEffect(() => {
-    try {
-      const raw =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem("journalEntries:v1")
-          : null;
-      const list: any[] = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(list)) return;
-      // Sort newest first and take the most recent 8 entries
-      list.sort((a, b) => (b?.createdAt ?? 0) - (a?.createdAt ?? 0));
-      const recent = list.slice(0, 8);
-      const perEntryLimit = 400;
-      const lines = recent.map((e: any) => {
-        const date =
-          (e?.dateISO && new Date(e.dateISO).toISOString().slice(0, 10)) || "";
-        const content: string = String(e?.content ?? "")
-          .replace(/\s+/g, " ")
-          .trim();
-        const trimmed =
-          content.length > perEntryLimit
-            ? content.slice(0, perEntryLimit) + "…"
-            : content;
-        return `- [${date}] ${trimmed}`;
-      });
-      const header = "Recent journal entries:";
-      const context = [header, ...lines].join("\n");
-      // Cap overall length to avoid large payloads
-      setJournalContext(context.slice(0, 3000));
-    } catch {
-      // ignore parse errors
+    if (journalEntries) {
+      const recent = journalEntries.slice(0, 8);
+      const context = recent.map(e => `[${new Date(e.createdAt).toLocaleDateString()}] ${e.content}`).join("\n");
+      setJournalContext(context);
     }
-  }, []);
+  }, [journalEntries]);
+
   const confettiRef = useRef<ConfettiRef>(null);
 
   const handleAnswer = (answer: string) => {
@@ -162,28 +148,28 @@ export default function CheckPage() {
         status: "Excellent",
         message:
           "Your responses suggest you're doing well! Keep maintaining your healthy habits and positive mindset.",
-        color: "text-green-600",
+        color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200",
       } as const;
     } else if (avg <= 1.5) {
       return {
         status: "Good",
         message:
           "You're doing okay, but there might be some areas where you could use some self-care and attention.",
-        color: "text-blue-600",
+        color: "text-blue-600 bg-blue-50 dark:bg-blue-950/20 border-blue-200",
       } as const;
     } else if (avg <= 2.25) {
       return {
         status: "Fair",
         message:
           "Your responses indicate you might be experiencing some challenges. Consider talking to friends, family, or a counselor about how you're feeling.",
-        color: "text-yellow-600",
+        color: "text-amber-600 bg-amber-50 dark:bg-amber-950/20 border-amber-200",
       } as const;
     } else {
       return {
         status: "Concerning",
         message:
           "Your responses suggest you might be going through a difficult time. We strongly recommend reaching out to a mental health professional for support.",
-        color: "text-red-600",
+        color: "text-red-600 bg-red-50 dark:bg-red-950/20 border-red-200",
       } as const;
     }
   };
@@ -196,7 +182,7 @@ export default function CheckPage() {
 
   // Trigger AI insights when results are shown the first time
   useEffect(() => {
-    if (!showResults || aiData || loadingAI) return;
+    if (!showResults || aiData || loadingAI || !user) return;
     const run = async () => {
       try {
         setLoadingAI(true);
@@ -218,6 +204,14 @@ export default function CheckPage() {
             ? json
             : json?.insights ?? JSON.stringify(json);
         setAiData(text);
+        
+        // Save to Convex
+        await saveCheckIn({
+            userId: user.id,
+            answers: answers,
+            insight: text,
+        });
+        
       } catch (err: any) {
         setAiError(err?.message ?? "Something went wrong");
       } finally {
@@ -225,7 +219,7 @@ export default function CheckPage() {
       }
     };
     run();
-  }, [showResults]);
+  }, [showResults]); // Dependent only on showResults (and user existence) to run once
 
   // Fire confetti exactly when results are shown to the user
   useEffect(() => {
@@ -237,97 +231,127 @@ export default function CheckPage() {
     return () => cancelAnimationFrame(id);
   }, [showResults]);
 
-  const riskColor =
-    "from-amber-500/20 via-amber-500/10 to-transparent border-amber-500/30";
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   if (showResults) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6 relative">
         <Confetti
           ref={confettiRef}
-          className="absolute left-0 top-0 z-0 size-full"
+          className="absolute left-0 top-0 z-0 size-full pointer-events-none"
         />
 
-        <h2 className="text-3xl font-bold mb-4 font-serif">
-          Mental Health Check-in Results
-        </h2>
+        <motion.div 
+           initial={{ opacity: 0, scale: 0.95 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="relative z-10"
+        >
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold font-serif">
+              Check-in Complete
+            </h2>
+            <Button onClick={resetQuiz} variant={"outline"} className="gap-2">
+              <RotateCw className="h-4 w-4" />
+              Start Over
+            </Button>
+          </div>
 
-        <Button onClick={resetQuiz} variant={"outline"}>
-          <RotateCw />
-          Take Again
-        </Button>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+               {result && (
+                  <div className={`p-6 rounded-2xl border ${result.color} mb-6 shadow-sm`}>
+                    <h3 className="text-2xl font-bold mb-3 flex items-center gap-2">
+                      <CheckCircle2 className="h-6 w-6" />
+                      Status: {result.status}
+                    </h3>
+                    <p className="text-lg leading-relaxed opacity-90">{result.message}</p>
+                  </div>
+                )}
+                
+                <div
+                  className="relative rounded-2xl border overflow-hidden bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-background p-6 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="h-5 w-5 text-indigo-500" />
+                    <h3 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 animate-pulse">
+                      AI Insights
+                    </h3>
+                  </div>
 
-        <div
-          className={`relative rounded-2xl border mt-6 mb-6 overflow-hidden bg-gradient-to-b ${riskColor}`}>
-          <div className="p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h3
-                className="text-xl font-semibold text-transparent bg-clip-text
-               bg-gradient-to-r from-white to-white/40
-               [background-size:200%_200%] animate-[wave_3s_linear_infinite]">
-                AI Insights
-              </h3>
+                  {loadingAI && (
+                    <div className="flex flex-col gap-3">
+                       <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+                       <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+                       <p className="text-sm text-muted-foreground mt-2">Analyzing your patterns...</p>
+                    </div>
+                  )}
+                  {aiError && <p className="text-sm text-red-500">{aiError}</p>}
+                  {aiData && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <p className="leading-relaxed text-foreground/90 whitespace-pre-wrap">{aiData}</p>
+                    </motion.div>
+                  )}
+                </div>
             </div>
 
-            {loadingAI && (
-              <p className="text-sm text-muted-foreground">
-                Generating personalized insights…
-              </p>
-            )}
-            {aiError && <p className="text-sm text-red-500">{aiError}</p>}
-            {aiData && (
-              <div className="space-y-4">
-                <p className="leading-relaxed text-foreground/90">{aiData}</p>
-              </div>
-            )}
+            <div className="h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+               <h4 className="font-semibold mb-4 text-muted-foreground sticky top-0 bg-background/95 backdrop-blur z-10 py-2">Response Summary</h4>
+               <div className="space-y-3">
+                  {questions.map((question, index) => (
+                    <div key={question.id} className="p-4 rounded-xl bg-muted/30 border text-sm">
+                      <p className="font-medium mb-1 text-foreground/80">{question.text}</p>
+                      <p className="text-primary font-medium">
+                        {answers[index]}
+                      </p>
+                    </div>
+                  ))}
+               </div>
+            </div>
           </div>
-        </div>
-
-        <div className="mb-6 p-4 border rounded-lg">
-          {result && (
-            <>
-              <h3 className={`text-xl font-semibold mb-2 ${result.color}`}>
-                Status: {result.status}
-              </h3>
-              <p className="mb-4">{result.message}</p>
-            </>
-          )}
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2">Your responses:</h4>
-            {questions.map((question, index) => (
-              <div key={question.id} className="mb-2">
-                <p className="font-medium">{question.text}</p>
-                <p className="text-muted-foreground">
-                  Your answer: {answers[index]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 py-6">
-      <h1 className="text-3xl font-bold mb-6 font-serif">Mental Health Check-in</h1>
+    <div className="max-w-2xl mx-auto p-6 py-12 flex flex-col justify-center min-h-[80vh]">
       <div className="mb-8">
-        <h2 className="text-xl mb-4">{questions[currentQuestion].text}</h2>
-        <div className="space-y-2">
-          {questions[currentQuestion].options.map((option) => (
-            <button
-              key={option}
-              onClick={() => handleAnswer(option)}
-              className="w-full text-left p-3 border rounded hover:bg-accent transition-colors">
-              {option}
-            </button>
-          ))}
-        </div>
-        <div className="mt-4 text-sm text-gray-500">
-          Question {currentQuestion + 1} of {questions.length}
-        </div>
+         <div className="flex justify-between text-sm text-muted-foreground mb-2">
+            <span>Question {currentQuestion + 1} of {questions.length}</span>
+            <span>{Math.round(progress)}%</span>
+         </div>
+         <Progress value={progress} className="h-2" />
       </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}>
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 font-serif leading-tight">
+             {questions[currentQuestion].text}
+          </h2>
+          
+          <div className="space-y-3">
+            {questions[currentQuestion].options.map((option, idx) => (
+              <motion.button
+                key={option}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                onClick={() => handleAnswer(option)}
+                className="w-full text-left p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-accent hover:scale-[1.01] hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="flex items-center justify-between">
+                   <span className="text-lg">{option}</span>
+                   <div className="w-4 h-4 rounded-full border border-primary/30 group-hover:border-primary group-hover:bg-primary/10 transition-colors" />
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

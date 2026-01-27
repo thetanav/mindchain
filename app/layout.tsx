@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import { AuthProvider } from "@/components/auth-provider";
+import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { Toaster } from "@/components/ui/toaster";
 import NextTopLoader from 'nextjs-toploader';
 import "./globals.css";
@@ -42,10 +42,10 @@ export default function RootLayout({
             forcedTheme="light"
             enableSystem={false}
             disableTransitionOnChange>
-            <AuthProvider>
+            <ConvexClientProvider>
               <NextTopLoader />
               {children}
-            </AuthProvider>
+            </ConvexClientProvider>
             <Toaster />
           </ThemeProvider>
         </body>

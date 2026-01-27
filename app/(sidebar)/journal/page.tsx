@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
@@ -22,30 +22,14 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sparkles, Loader2, Calendar } from "lucide-react";
+import { Sparkles, Loader2, Calendar, Save, RotateCw, PenLine } from "lucide-react";
 
-type JournalEntry = {
-  id: string;
-  content: string;
-  analysis?: string;
-  dateISO: string; // YYYY-MM-DD for display/grouping
-  createdAt: number; // epoch ms
-};
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
-const STORAGE_KEY = "journalEntries:v1";
-
-function safeParse<T>(raw: string | null, fallback: T): T {
-  if (!raw) return fallback;
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function formatDate(dateISO: string) {
-  const d = new Date(dateISO);
+function formatDate(createdAt: number) {
+  const d = new Date(createdAt);
   return d.toLocaleDateString(undefined, {
     weekday: "long",
     year: "numeric",
@@ -54,60 +38,27 @@ function formatDate(dateISO: string) {
   });
 }
 
-function makeId() {
-  try {
-    const g: any =
-      typeof globalThis !== "undefined" ? (globalThis as any) : undefined;
-    const uuid = g?.crypto?.randomUUID?.();
-    if (uuid) return uuid;
-  } catch { }
-  return `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
 export default function Page() {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const { user } = useUser();
   const [draft, setDraft] = useState("");
   const [currentAnalysis, setCurrentAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const data = safeParse<JournalEntry[]>(
-      typeof window !== "undefined"
-        ? window.localStorage.getItem(STORAGE_KEY)
-        : null,
-      []
-    );
-    // sort newest first
-    data.sort((a, b) => b.createdAt - a.createdAt);
-    setEntries(data);
-    setMounted(true);
-  }, []);
-
-  // Persist to localStorage when entries change
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    } catch {
-      // ignore storage errors
-    }
-  }, [entries, mounted]);
+  const entries = useQuery(api.journal.getEntries, user ? { userId: user.id } : "skip");
+  const createEntry = useMutation(api.journal.createEntry);
 
   const canSave = useMemo(() => draft.trim().length > 0, [draft]);
 
-  const handleSave = () => {
-    if (!canSave) return;
-    const now = new Date();
-    const entry: JournalEntry = {
-      id: makeId(),
+  const handleSave = async () => {
+    if (!canSave || !user) return;
+    
+    await createEntry({
+      userId: user.id,
       content: draft.trim(),
-      analysis: currentAnalysis,
-      dateISO: now.toISOString().slice(0, 10),
-      createdAt: now.getTime(),
-    };
-    setEntries((prev) => [entry, ...prev]);
+      sentiment: currentAnalysis ? "AI Reflection Included" : "Standard Entry",
+      moodScore: 5, // Default or parsed from AI
+    });
+    
     setDraft("");
     setCurrentAnalysis("");
   };
@@ -125,30 +76,16 @@ export default function Page() {
       });
 
       if (!response.ok) throw new Error("Analysis failed");
-      if (!response.body) throw new Error("No response body");
-
-      const reader = response.body.getReader();
+      
+      const reader = response.body?.getReader();
+      if (!reader) return;
+      
       const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        const chunkValue = decoder.decode(value);
-        const lines = chunkValue.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.textDelta) {
-                setCurrentAnalysis((prev) => prev + parsed.textDelta);
-              } else if (typeof parsed === 'string') {
-                setCurrentAnalysis((prev) => prev + parsed);
-              }
-            } catch (e) { }
-          }
-        }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        setCurrentAnalysis(prev => prev + text);
       }
     } catch (error) {
       console.error(error);
@@ -159,111 +96,147 @@ export default function Page() {
 
   return (
     <div className="container py-8 max-w-5xl mx-auto space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight font-serif">Journal</h1>
-        <p className="text-muted-foreground">
-          Capture your thoughts, find clarity.
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-2"
+      >
+        <h1 className="text-4xl font-bold tracking-tight font-serif bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Journal</h1>
+        <p className="text-muted-foreground text-lg">
+          Capture your thoughts, find clarity, and track your growth.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-4">
-        <Textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="How are you feeling today?"
-          className="min-h-[200px] text-lg p-4 resize-y"
-        />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden ring-1 ring-border/50">
+          <CardContent className="p-0">
+             <div className="relative">
+                <Textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="How are you feeling right now?"
+                  className="min-h-[250px] text-lg p-6 resize-none border-none focus-visible:ring-0 bg-transparent leading-relaxed placeholder:text-muted-foreground/40"
+                />
+                <div className="absolute bottom-4 right-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded-full backdrop-blur-xs">
+                  {draft.length} chars
+                </div>
+             </div>
 
-        {currentAnalysis && (
-          <Alert className="bg-primary/5 border-primary/20">
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>AI Reflection</AlertTitle>
-            <AlertDescription className="mt-2 whitespace-pre-wrap leading-relaxed">
-              {currentAnalysis}
-            </AlertDescription>
-          </Alert>
-        )}
+             <AnimatePresence>
+               {currentAnalysis && (
+                 <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t bg-blue-50/50 dark:bg-blue-950/20"
+                 >
+                   <div className="p-6">
+                      <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400">
+                         <Sparkles className="h-4 w-4" />
+                         <span className="font-medium text-sm">AI Reflection</span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{currentAnalysis}</p>
+                   </div>
+                 </motion.div>
+               )}
+             </AnimatePresence>
 
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            {draft.length > 0 ? `${draft.length} characters` : ""}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={analyzeEntry}
-              disabled={isAnalyzing || draft.length < 10}
-            >
-              {isAnalyzing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
-              )}
-              Analyze
-            </Button>
-            <Button onClick={handleSave} disabled={!canSave}>
-              Save Note
-            </Button>
-          </div>
-        </div>
-      </div>
+             <div className="p-4 bg-muted/30 border-t flex justify-between items-center">
+                <div className="flex gap-2">
+                   <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDraft("")}
+                    disabled={!canSave}
+                    className="text-muted-foreground hover:text-destructive"
+                   >
+                     Clear
+                   </Button>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="secondary"
+                    onClick={analyzeEntry}
+                    disabled={isAnalyzing || draft.length < 10}
+                    className="bg-background shadow-sm hover:bg-accent border"
+                  >
+                    {isAnalyzing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4 text-blue-500" />
+                    )}
+                    {isAnalyzing ? "Reflecting..." : "AI Reflect"}
+                  </Button>
+                  <Button onClick={handleSave} disabled={!canSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all hover:scale-105">
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Entry
+                  </Button>
+                </div>
+             </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Separator />
+      <Separator className="my-8 opacity-50" />
 
       <section>
-        {mounted && entries.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
+         <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold font-serif">Past Entries</h2>
+         </div>
+        {entries === undefined ? (
+           <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-muted-foreground h-8 w-8" /></div>
+        ) : entries.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed rounded-3xl opacity-50">
+            <PenLine className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-lg font-medium text-muted-foreground">
               Your journal is empty. Start writing above.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {entries.map((entry) => (
-              <Dialog key={entry.id}>
+            {entries.map((entry, index) => (
+              <Dialog key={entry._id}>
                 <DialogTrigger asChild>
-                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors h-full flex flex-col">
-                    <CardHeader>
-                      <CardDescription>
-                        {formatDate(entry.dateISO)}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed whitespace-pre-wrap">
-                        {entry.content}
-                      </p>
-                    </CardContent>
-                    {entry.analysis && (
-                      <CardFooter>
-                        <Badge variant="secondary" className="gap-1">
-                          <Sparkles className="h-3 w-3" /> AI Analyzed
-                        </Badge>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card className="cursor-pointer hover:bg-accent/40 transition-all duration-300 h-full flex flex-col glass-card border-none hover:shadow-lg hover:-translate-y-1 group">
+                      <CardHeader className="pb-3">
+                        <CardDescription className="font-medium text-primary/80 group-hover:text-primary transition-colors">
+                          {formatDate(entry.createdAt)}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed whitespace-pre-wrap group-hover:text-foreground/80 transition-colors">
+                          {entry.content}
+                        </p>
+                      </CardContent>
+                      <CardFooter className="pt-0 pb-4 text-xs text-muted-foreground flex justify-between">
+                         <span>{new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                         {/* {entry.sentiment && <Badge variant="outline" className="text-[10px] font-normal">{entry.sentiment}</Badge>} */}
                       </CardFooter>
-                    )}
-                  </Card>
+                    </Card>
+                  </motion.div>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-y-auto glass-card border-white/20">
                   <DialogHeader>
-                    <DialogTitle>{formatDate(entry.dateISO)}</DialogTitle>
+                    <DialogTitle className="font-serif text-2xl">{formatDate(entry.createdAt)}</DialogTitle>
                     <DialogDescription>
-                      Journal Entry
+                      {new Date(entry.createdAt).toLocaleTimeString()}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-6 mt-4">
+                  <div className="space-y-8 mt-6">
                     <div className="prose dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-wrap text-base leading-relaxed">
+                      <p className="whitespace-pre-wrap text-lg leading-loose font-serif text-foreground/90">
                         {entry.content}
                       </p>
                     </div>
-                    {entry.analysis && (
-                      <Alert className="bg-muted">
-                        <Sparkles className="h-4 w-4" />
-                        <AlertTitle>AI Reflection</AlertTitle>
-                        <AlertDescription className="mt-2 whitespace-pre-wrap">
-                          {entry.analysis}
-                        </AlertDescription>
-                      </Alert>
-                    )}
                   </div>
                 </DialogContent>
               </Dialog>

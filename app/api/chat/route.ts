@@ -1,23 +1,21 @@
 import { chat, toServerSentEventsResponse } from "@tanstack/ai";
-import { ollamaText } from "@tanstack/ai-ollama";
-// import { geminiText } from "@tanstack/ai-gemini";
+import { geminiText } from "@tanstack/ai-gemini";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = (await request.json().catch(() => ({}))) as any;
+    const body = (await req.json().catch(() => ({}))) as any;
     const { messages = [], conversationId, journalContext = "" } = body ?? {};
 
     const stream = chat({
-      // adapter: geminiText("gemini-2.0-flash-lite"),
-      adapter: ollamaText("gemma3:1b"),
+      adapter: geminiText("gemini-1.5-flash"),
       systemPrompts: [
-        `You are an expert mental health therapist. Help user with mental health issues. Respond in plain text (no markdown), concise and supportive.
-If provided, consider the user's recent journal entries to personalize your guidance.
-Recent Journal Context (may be empty):\n${journalContext ?? ""}\n-- End of Journal Context --\n
-Rules:
-- Keep answers short and empathetic
-- Avoid clinical diagnoses; suggest coping strategies and next steps
-- Encourage seeking professional help if risk or crisis indicators appear`,
+        `You are MindChain, an empathetic and supportive mental health companion.
+Your goal is to listen, validate feelings, and offer gentle, practical advice.
+Do not provide medical diagnoses. If the user seems to be in crisis, urge them to seek professional help.
+
+${journalContext ? `Here is some context from the user's recent journal entries to help you understand them better:\n${journalContext}\n-- End of Context --` : ""}
+
+Be conversational, warm, and concise.`,
       ],
       messages,
       conversationId,

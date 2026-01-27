@@ -1,5 +1,4 @@
-import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -19,14 +18,16 @@ User Responses:
     
 ${paired}
 
-${journalContext ? `Recent Journal Context:\n${journalContext}\n-- End of Journal Context --` : ''}`;
+${journalContext ? `Recent Journal Context:\n${journalContext}\n-- End of Journal Context --` : ''}
 
-  const result = await generateText({
-    model: google("gemini-2.0-flash-lite"),
-    system:
-      "Analyze the user's mental health check responses. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.",
-    prompt,
-  });
+Analyze the user's mental health check responses. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.`;
 
-  return NextResponse.json(result.text);
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+
+  return NextResponse.json(text);
 }

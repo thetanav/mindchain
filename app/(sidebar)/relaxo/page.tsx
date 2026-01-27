@@ -115,11 +115,11 @@ export default function CalmRoom() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 transition-all duration-1000">
+    <div className="h-full bg-gradient-to-br from-background via-muted/50 to-background transition-all duration-1000 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold font-serif text-gray-800">
+          <h1 className="text-3xl font-bold font-serif text-foreground">
             CalmRoom
           </h1>
           <StreakTracker />
@@ -127,7 +127,7 @@ export default function CalmRoom() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center justify-center px-6 pb-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         <PhaseIndicator phase={currentPhase} isActive={isActive} />
 
         <div className="my-12">
@@ -146,7 +146,7 @@ export default function CalmRoom() {
             <Button
               onClick={handleStart}
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+              className="px-8 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 text-lg"
             >
               <Play className="w-5 h-5 mr-2" />
               Start Session
@@ -156,7 +156,7 @@ export default function CalmRoom() {
               onClick={handlePause}
               size="lg"
               variant="outline"
-              className="px-8 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 backdrop-blur-sm"
+              className="px-8 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-sm text-lg"
             >
               <Pause className="w-5 h-5 mr-2" />
               Pause
@@ -167,7 +167,7 @@ export default function CalmRoom() {
             onClick={handleReset}
             size="lg"
             variant="outline"
-            className="px-6 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 backdrop-blur-sm"
+            className="px-6 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-sm"
           >
             <RotateCcw className="w-5 h-5" />
           </Button>
@@ -176,9 +176,9 @@ export default function CalmRoom() {
         {/* Instructions */}
         {!isActive && sessionTime === TOTAL_SESSION_TIME && (
           <div className="mt-8 text-center max-w-md">
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Take a moment to relax. Follow the breathing pattern:
-              <span className="font-semibold text-gray-800">
+              <span className="font-semibold text-foreground">
                 {" "}
                 Inhale for 4 seconds, Hold for 4 seconds, Exhale for 4 seconds
               </span>

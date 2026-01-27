@@ -1,126 +1,207 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, TrendingUp, Award, Clock, Coins } from "lucide-react";
-import { format, subDays } from "date-fns";
+import { Calendar, TrendingUp, Award, Clock, Coins, Sparkles, ArrowRight } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardFooter
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import SummaryPieChart from "@/components/summary-pie-chart";
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function DashboardPage() {
-  const [streak] = useState(7);
-  const [completedSessions] = useState(12);
-  const [totalMinutes] = useState(540);
-  const [nextSession] = useState(subDays(new Date(), -2));
+  const { user } = useUser();
+  const storeUser = useMutation(api.users.store);
+  const [greeting, setGreeting] = useState("Hello");
+
+  useEffect(() => {
+    setGreeting(getGreeting());
+  }, []);
+  
+  // Sync user with Convex
+  useEffect(() => {
+    if (user) {
+      storeUser({
+        userId: user.id,
+        email: user.primaryEmailAddress?.emailAddress || "",
+        name: user.fullName || user.username || "User",
+      });
+    }
+  }, [user, storeUser]);
+
+  // Fetch User Data
+  const userData = useQuery(api.users.get, user ? { userId: user.id } : "skip");
+  const journalStats = useQuery(api.journal.getStats, user ? { userId: user.id } : "skip");
+
+  const streak = userData?.streak || 0;
+  const coins = userData?.coins || 0;
+  const totalEntries = journalStats?.totalEntries || 0;
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 max-w-7xl mx-auto space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight font-serif">
-              Your Dashboard
+            <h1 className="text-4xl font-bold tracking-tight font-serif bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              {greeting}, {user?.firstName || "Friend"}
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Track your progress and mental health journey
+            <p className="text-muted-foreground mt-2 text-lg">
+              Here's an overview of your mental wellness journey.
             </p>
           </div>
+          <Button asChild className="rounded-full shadow-lg hover:shadow-xl transition-all">
+             <Link href="/journal">
+               <Sparkles className="mr-2 h-4 w-4" />
+               New Entry
+             </Link>
+          </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Journal Streak
-              </CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{streak} days</div>
-              <p className="text-xs text-muted-foreground">5 max streak</p>
-              <div className="mt-3">
-                <Progress value={70} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card h-full border-none bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  Journal Streak
+                </CardTitle>
+                <Award className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{streak} <span className="text-sm font-normal text-muted-foreground">days</span></div>
+                <p className="text-xs text-muted-foreground mt-1">Keep the momentum going!</p>
+                <div className="mt-4">
+                  <Progress value={Math.min((streak / 30) * 100, 100)} className="h-2 bg-blue-200 dark:bg-blue-900" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Expert Sessions
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant={"ghost"} className="my-5" size={"sm"}>
-                <a href="https://cal.com/tanav-poswal-lvtupv">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Schedule Session
-                </a>
-              </Button>
-              <p className="text-xs text-muted-foreground">1 last month</p>
-              <div className="mt-3">
-                <Progress value={60} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card h-full border-none bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-amber-600 dark:text-amber-400">Coins Earned</CardTitle>
+                <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl font-bold">{coins}</div>
+                  <Image src="/coin.png" alt="coins" width={24} height={24} className="animate-pulse" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Redeem for rewards soon</p>
+                <div className="mt-4">
+                  <Progress value={Math.min(coins / 100, 100)} className="h-2 bg-amber-200 dark:bg-amber-900" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Check Result
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalMinutes}</div>
-              <p className="text-xs text-muted-foreground">Good status</p>
-              <div className="mt-3">
-                <Progress value={54} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card h-full border-none bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                  Total Entries
+                </CardTitle>
+                <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{totalEntries}</div>
+                <p className="text-xs text-muted-foreground mt-1">Moments captured</p>
+                <div className="mt-4">
+                  <Progress value={Math.min(totalEntries * 2, 100)} className="h-2 bg-purple-200 dark:bg-purple-900" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Coins</CardTitle>
-              <Coins className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Image src="/coin.png" alt="coins" width={50} height={50} />
-                <p className="text-xl font-bold">54.6</p>
-              </div>
-              <div className="mt-3">
-                <Progress value={54} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card h-full border-none bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  Expert Support
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </CardHeader>
+              <CardContent>
+                 <div className="flex flex-col gap-2">
+                    <Button asChild variant={"secondary"} size="sm" className="w-full justify-start bg-white/50 hover:bg-white/80 dark:bg-black/20">
+                      <a href="https://cal.com/tanav-poswal-lvtupv" target="_blank" rel="noopener noreferrer">
+                        <Calendar className="mr-2 h-3.5 w-3.5" />
+                        Book Session
+                      </a>
+                    </Button>
+                    <p className="text-xs text-muted-foreground">Available slots today</p>
+                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
-        <div className="flex gap-4">
-          <Card className="flex-1">
+        {/* Charts & Actions Section */}
+        <div className="grid gap-6 md:grid-cols-7">
+          <Card className="md:col-span-4 glass-card border-none shadow-md">
             <CardHeader>
-              <CardTitle>Progress Last Week</CardTitle>
+              <CardTitle>Mood Distribution</CardTitle>
+              <CardDescription>Based on your recent journal entries</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-[300px]">
               <SummaryPieChart />
             </CardContent>
           </Card>
+
+          <div className="md:col-span-3 flex flex-col gap-6">
+             <Card className="glass-card border-none shadow-md flex-1 flex flex-col justify-center">
+                <CardHeader>
+                   <CardTitle>AI Companion</CardTitle>
+                   <CardDescription>Feeling overwhelmed? Let's chat.</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                   <Button className="w-full" asChild>
+                      <Link href="/chat">
+                        Start Conversation <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                   </Button>
+                </CardFooter>
+             </Card>
+
+             <Card className="glass-card border-none shadow-md flex-1 flex flex-col justify-center">
+                <CardHeader>
+                   <CardTitle>Daily Check-in</CardTitle>
+                   <CardDescription>Take 2 minutes to reflect on your day.</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                   <Button variant="outline" className="w-full" asChild>
+                      <Link href="/check">
+                        Start Check-in <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                   </Button>
+                </CardFooter>
+             </Card>
+          </div>
         </div>
       </motion.div>
     </div>

@@ -4,11 +4,18 @@
 @import "@clerk/themes/shadcn.css";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground relative overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
     letter-spacing: var(--tracking-normal);
   }
   :root {
@@ -250,6 +257,10 @@
 
   .typing-dots {
     animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  .glass-card {
+    @apply bg-background/60 backdrop-blur-md border border-border/50 shadow-lg;
   }
 }
 
