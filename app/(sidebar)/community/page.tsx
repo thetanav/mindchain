@@ -101,7 +101,7 @@ export default function CommunityPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Community Support</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-serif">Community Support</h1>
             <p className="text-muted-foreground mt-1">Connect with others on similar mental health journeys</p>
           </div>
           <div className="relative w-full md:w-64">

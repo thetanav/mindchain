@@ -7,8 +7,7 @@ import { PhaseIndicator } from "@/components/phase-indicator";
 import { StreakTracker } from "@/components/streak-tracker";
 import { SessionComplete } from "@/components/session-complete";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
 type BreathingPhase = "inhale" | "hold" | "exhale";
 
@@ -17,7 +16,6 @@ const TOTAL_SESSION_TIME = 120;
 const PHASES: BreathingPhase[] = ["inhale", "hold", "exhale"];
 
 export default function CalmRoom() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<BreathingPhase>("inhale");
@@ -112,39 +110,20 @@ export default function CalmRoom() {
     handleStart();
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
-
   if (isSessionComplete) {
     return <SessionComplete onNewSession={handleNewSession} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900 transition-all duration-1000">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 transition-all duration-1000">
       {/* Header */}
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-3xl font-bold font-serif text-gray-800">
             CalmRoom
           </h1>
           <StreakTracker />
         </div>
-
-        <Button
-          onClick={toggleTheme}
-          variant="outline"
-          size="sm"
-          className="bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-white/10 dark:border-white/20 dark:text-white dark:hover:bg-white/20 backdrop-blur-sm"
-        >
-          {!mounted ? (
-            <div className="w-4 h-4" />
-          ) : theme === "dark" ? (
-            <Sun className="w-4 h-4" />
-          ) : (
-            <Moon className="w-4 h-4" />
-          )}
-        </Button>
       </div>
 
       {/* Main Content */}
@@ -177,7 +156,7 @@ export default function CalmRoom() {
               onClick={handlePause}
               size="lg"
               variant="outline"
-              className="px-8 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-white/10 dark:border-white/20 dark:text-white dark:hover:bg-white/20 backdrop-blur-sm"
+              className="px-8 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 backdrop-blur-sm"
             >
               <Pause className="w-5 h-5 mr-2" />
               Pause
@@ -188,7 +167,7 @@ export default function CalmRoom() {
             onClick={handleReset}
             size="lg"
             variant="outline"
-            className="px-6 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 dark:bg-white/10 dark:border-white/20 dark:text-white dark:hover:bg-white/20 backdrop-blur-sm"
+            className="px-6 py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-105 bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 backdrop-blur-sm"
           >
             <RotateCcw className="w-5 h-5" />
           </Button>
@@ -197,9 +176,9 @@ export default function CalmRoom() {
         {/* Instructions */}
         {!isActive && sessionTime === TOTAL_SESSION_TIME && (
           <div className="mt-8 text-center max-w-md">
-            <p className="text-gray-600 dark:text-white/80 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed">
               Take a moment to relax. Follow the breathing pattern:
-              <span className="font-semibold text-gray-800 dark:text-white">
+              <span className="font-semibold text-gray-800">
                 {" "}
                 Inhale for 4 seconds, Hold for 4 seconds, Exhale for 4 seconds
               </span>

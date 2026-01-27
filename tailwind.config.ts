@@ -99,7 +99,16 @@ const config: Config = withUt({
   				'Liberation Mono',
   				'Courier New',
   				'monospace'
-  			]
+  			],
+			serif: [
+				'var(--font-serif)',
+				'ui-serif',
+				'Georgia',
+				'Cambria',
+				'"Times New Roman"',
+				'Times',
+				'serif'
+			]
   		},
   		keyframes: {
   			'accordion-down': {

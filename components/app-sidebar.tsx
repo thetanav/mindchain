@@ -15,7 +15,6 @@ import { CircleCheck, Bot, Files, Globe, Home, Album, AudioWaveform, Layers, Bra
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "./ui/button";
-import { ModeToggle } from "./theme-mode";
 
 const routes = [
   { href: "/home", icon: <Home className="w-4" />, label: "Home" },
@@ -67,7 +66,6 @@ export function AppSidebar() {
         <SignedIn>
           <div className="border px-3 py-2 rounded-lg flex items-center justify-between bg-background">
             <UserButton />
-            <ModeToggle />
           </div>
         </SignedIn>
       </SidebarFooter>

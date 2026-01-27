@@ -248,7 +248,7 @@ export default function CheckPage() {
           className="absolute left-0 top-0 z-0 size-full"
         />
 
-        <h2 className="text-3xl font-bold mb-4">
+        <h2 className="text-3xl font-bold mb-4 font-serif">
           Mental Health Check-in Results
         </h2>
 
@@ -311,7 +311,7 @@ export default function CheckPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 py-6">
-      <h1 className="text-3xl font-bold mb-6">Mental Health Check-in</h1>
+      <h1 className="text-3xl font-bold mb-6 font-serif">Mental Health Check-in</h1>
       <div className="mb-8">
         <h2 className="text-xl mb-4">{questions[currentQuestion].text}</h2>
         <div className="space-y-2">

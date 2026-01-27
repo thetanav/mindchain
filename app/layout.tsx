@@ -1,6 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/components/auth-provider";
@@ -11,6 +11,13 @@ import "./globals.css";
 const inter = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  weight: "400",
   display: "swap",
 });
 
@@ -29,11 +36,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html>
         <body
-          className={`${inter.variable} font-sans antialiased min-h-screen`}>
+          className={`${inter.variable} ${serif.variable} font-sans antialiased min-h-screen`}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem
+            forcedTheme="light"
+            enableSystem={false}
             disableTransitionOnChange>
             <AuthProvider>
               <NextTopLoader />

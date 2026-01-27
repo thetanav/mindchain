@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StripedPattern } from "@/components/magicui/striped-pattern";
 
 const serif = Instrument_Serif({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function Page() {
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden">
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-4 py-32 md:py-48 text-center relative z-10">
+      <section className="flex flex-col items-center justify-center px-4 py-28 md:py-36 text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,6 +65,8 @@ export default function Page() {
             </Button>
           </div>
         </motion.div>
+
+        <StripedPattern className="[mask-image:radial-gradient(400px_circle_at_center,white,transparent)] -z-10 opacity-40" />
       </section>
 
       {/* Tools Section */}
@@ -73,7 +76,7 @@ export default function Page() {
             <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${serif.className}`}>Everything You Need</h2>
             <p className="text-lg text-muted-foreground">Comprehensive features designed for your well-being</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -195,7 +198,7 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                     Visualize your emotional journey with interactive charts that track mood, anxiety, and sleep quality over time.
+                    Visualize your emotional journey with interactive charts that track mood, anxiety, and sleep quality over time.
                   </p>
                 </CardContent>
               </Card>
@@ -223,14 +226,6 @@ export default function Page() {
       </section>
 
       <Footer />
-
-      <Particles
-        className="absolute inset-0 z-0"
-        quantity={100}
-        ease={80}
-        color={color}
-        refresh
-      />
     </div>
   );
 }

@@ -160,7 +160,7 @@ export default function Page() {
   return (
     <div className="container py-8 max-w-5xl mx-auto space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Journal</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-serif">Journal</h1>
         <p className="text-muted-foreground">
           Capture your thoughts, find clarity.
         </p>

@@ -112,7 +112,7 @@ export default function ChatPage() {
                   <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                     <Sparkles className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">
+                  <h3 className="text-xl font-semibold mb-2 font-serif">
                     How can I help you today?
                   </h3>
                   <p className="text-muted-foreground text-sm">
@@ -149,12 +149,11 @@ export default function ChatPage() {
                 <div
                   className={`flex flex-col max-w-[80%] ${message.role === "user" ? "items-end" : "items-start"
                     }`}>
-                  <div
-                    className={`rounded-lg px-4 py-3 ${message.role === "user"
-                      && "bg-foreground text-background"
-
-                      }`}>
-
+                                  <div
+                                    className={`rounded-lg px-4 py-3 ${message.role === "user"
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted"
+                                      }`}>
                     {message.parts.map((part, idx) => {
                       if (part.type === "thinking") {
                         return (
