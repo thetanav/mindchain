@@ -1,6 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Serif, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
@@ -8,10 +8,8 @@ import { Toaster } from "@/components/ui/toaster";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
-const inter = Bricolage_Grotesque({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
 });
 
 const serif = Instrument_Serif({
@@ -36,7 +34,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body
-          className={`${inter.variable} ${serif.variable} font-sans antialiased min-h-screen`}>
+          className={`${inter.className} ${serif.variable} font-sans antialiased min-h-screen`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

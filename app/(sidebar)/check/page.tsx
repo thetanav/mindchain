@@ -2,15 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RotateCw, Sparkles, CheckCircle2 } from "lucide-react";
+import { RotateCw, Sparkles, CheckCircle2, ChevronDown } from "lucide-react";
 import { Confetti, ConfettiRef } from "@/components/magicui/confetti";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
-import { postSseJson } from "@/lib/sse";
 import { Streamdown } from "streamdown";
+import { useChat, fetchServerSentEvents } from "@tanstack/ai-react";
 
 interface Question {
   id: number;
@@ -91,9 +91,9 @@ export default function CheckPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [loadingAI, setLoadingAI] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [aiData, setAiData] = useState<string | null>(null);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(true);
+  const [hasTriggered, setHasTriggered] = useState(false);
+  const [saved, setSaved] = useState(false);
   
   // Fetch journal context
   const journalEntries = useQuery(api.journal.getEntries, user ? { userId: user.id } : "skip");
@@ -108,6 +108,15 @@ export default function CheckPage() {
       setJournalContext(context);
     }
   }, [journalEntries]);
+
+  const { messages, sendMessage, isLoading } = useChat({
+    connection: fetchServerSentEvents("/api/quiz-insights"),
+    body: {
+      journalContext,
+    }
+  });
+
+  const aiData = messages[1]?.parts.map(p => p.type === "text" ? p.content : "").join("") || null;
 
   const confettiRef = useRef<ConfettiRef>(null);
 
@@ -126,8 +135,9 @@ export default function CheckPage() {
     setCurrentQuestion(0);
     setAnswers([]);
     setShowResults(false);
-    setAiData(null);
-    setAiError(null);
+    setIsSummaryCollapsed(true);
+    setHasTriggered(false);
+    setSaved(false);
   };
 
   const calculateResult = () => {
@@ -182,48 +192,54 @@ export default function CheckPage() {
     [showResults, answers]
   );
 
-  // Trigger AI insights when results are shown the first time
   useEffect(() => {
-    if (!showResults || aiData || loadingAI || !user) return;
-    const run = async () => {
-      try {
-        setLoadingAI(true);
-        setAiError(null);
-        
-        const stream = postSseJson<{ type: string; content?: string }>(
-          "/api/quiz-insights",
-          {
-            answers,
-            questions: questions.map((q) => q.text),
-            journalContext,
-          }
-        );
+    if (showResults && !hasTriggered) {
+      const paired = answers
+        .map(
+          (a, i) => `Q${i + 1}: ${questions[i].text}\nA${i + 1}: ${a}`
+        )
+        .join("\n\n");
+      const userPrompt = `User Responses:
+      
+${paired}
 
-        let fullText = "";
-        for await (const chunk of stream) {
-          if (chunk.type === "text-delta") {
-            fullText += chunk.content ?? "";
-            setAiData(fullText);
-          }
-        }
-        
-        // Save to Convex after stream is done
-        if (fullText) {
-          await saveCheckIn({
-              userId: user.id,
-              answers: answers,
-              insight: fullText,
-          });
-        }
-        
-      } catch (err: any) {
-        setAiError(err?.message ?? "Something went wrong");
-      } finally {
-        setLoadingAI(false);
+${journalContext ? `Recent Journal Context:\n${journalContext}\n-- End of Journal Context --` : ''}
+
+Analyze the user's mental health check responses. Provide empathetic, practical insights. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.`;
+      sendMessage(userPrompt);
+      setHasTriggered(true);
+
+      // Store the score in localStorage
+      const reverseIndexes = new Set([2]);
+      const severities = answers.map((answer, index) => {
+        const options = questions[index]?.options ?? [];
+        const pos = Math.max(0, options.indexOf(answer));
+        const base = Math.min(Math.max(pos, 0), 3);
+        return reverseIndexes.has(index) ? 3 - base : base;
+      });
+      const avg = severities.reduce((a, b) => a + b, 0) / severities.length;
+      const score = 3 - avg; // Invert: higher is better (0-3)
+      const today = new Date().toISOString().split('T')[0];
+      const existingScores = JSON.parse(localStorage.getItem('mentalHealthScores') || '{}');
+      existingScores[today] = score;
+      localStorage.setItem('mentalHealthScores', JSON.stringify(existingScores));
+    }
+  }, [showResults, hasTriggered, sendMessage, answers, questions, journalContext]);
+
+  useEffect(() => {
+    if (!isLoading && messages.length > 1 && !saved && user) {
+      const assistantMessage = messages[1];
+      const fullText = assistantMessage.parts.map(p => p.type === "text" ? p.content : "").join("");
+      if (fullText) {
+        saveCheckIn({
+          userId: user.id,
+          answers: answers,
+          insight: fullText,
+        });
+        setSaved(true);
       }
-    };
-    run();
-  }, [showResults]); // Dependent only on showResults (and user existence) to run once
+    }
+  }, [isLoading, messages, saved, saveCheckIn, user, answers]);
 
   // Fire confetti exactly when results are shown to the user
   useEffect(() => {
@@ -260,59 +276,67 @@ export default function CheckPage() {
             </Button>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-               {result && (
-                  <div className={`p-6 rounded-2xl border ${result.color} mb-6 shadow-sm`}>
-                    <h3 className="text-2xl font-bold mb-3 flex items-center gap-2">
-                      <CheckCircle2 className="h-6 w-6" />
-                      Status: {result.status}
-                    </h3>
-                    <p className="text-lg leading-relaxed opacity-90">{result.message}</p>
-                  </div>
-                )}
-                
-                <div
-                  className="relative rounded-2xl border overflow-hidden bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-background p-6 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="h-5 w-5 text-indigo-500" />
-                    <h3 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 animate-pulse">
-                      AI Insights
-                    </h3>
-                  </div>
+           <div className="flex flex-col gap-6">
+             <div>
+                {result && (
+                   <div className={`p-6 rounded-2xl border ${result.color} mb-6 shadow-sm`}>
+                     <h3 className="text-2xl font-bold mb-3 flex items-center gap-2">
+                       <CheckCircle2 className="h-6 w-6" />
+                       Status: {result.status}
+                     </h3>
+                     <p className="text-lg leading-relaxed opacity-90">{result.message}</p>
+                   </div>
+                 )}
+                 
+                 <div
+                   className="relative rounded-2xl border overflow-hidden bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-background p-6 backdrop-blur-sm">
+                   <div className="flex items-center gap-2 mb-4">
+                     <Sparkles className="h-5 w-5 text-indigo-500" />
+                     <h3 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 animate-pulse">
+                       AI Insights
+                     </h3>
+                   </div>
 
-                  {loadingAI && !aiData && (
-                    <div className="flex flex-col gap-3">
-                       <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
-                       <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-                       <p className="text-sm text-muted-foreground mt-2">Analyzing your patterns...</p>
-                    </div>
-                  )}
-                  {aiError && <p className="text-sm text-red-500">{aiError}</p>}
-                  {aiData && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <div className="leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                        <Streamdown>{aiData}</Streamdown>
+                   {isLoading && !aiData && (
+                     <div className="flex flex-col gap-3">
+                        <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+                        <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+                        <p className="text-sm text-muted-foreground mt-2">Analyzing your patterns...</p>
+                     </div>
+                   )}
+                   {aiData && (
+                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                       <div className="leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                         <Streamdown>{aiData}</Streamdown>
+                       </div>
+                     </motion.div>
+                   )}
+                 </div>
+             </div>
+
+             <div>
+                <button onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)} className="flex items-center gap-2 mb-4 font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isSummaryCollapsed ? '' : 'rotate-180'}`} />
+                  Response Summary
+                </button>
+                <AnimatePresence>
+                  {!isSummaryCollapsed && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                      <div className="space-y-3">
+                        {questions.map((question, index) => (
+                          <div key={question.id} className="p-4 rounded-xl bg-muted/30 border text-sm">
+                            <p className="font-medium mb-1 text-foreground/80">{question.text}</p>
+                            <p className="text-primary font-medium">
+                              {answers[index]}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     </motion.div>
                   )}
-                </div>
-            </div>
-
-            <div className="h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-               <h4 className="font-semibold mb-4 text-muted-foreground sticky top-0 bg-background/95 backdrop-blur z-10 py-2">Response Summary</h4>
-               <div className="space-y-3">
-                  {questions.map((question, index) => (
-                    <div key={question.id} className="p-4 rounded-xl bg-muted/30 border text-sm">
-                      <p className="font-medium mb-1 text-foreground/80">{question.text}</p>
-                      <p className="text-primary font-medium">
-                        {answers[index]}
-                      </p>
-                    </div>
-                  ))}
-               </div>
-            </div>
-          </div>
+                </AnimatePresence>
+              </div>
+           </div>
         </motion.div>
       </div>
     );

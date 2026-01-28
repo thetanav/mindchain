@@ -20,6 +20,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import SummaryPieChart from "@/components/summary-pie-chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -32,9 +33,19 @@ export default function DashboardPage() {
   const { user } = useUser();
   const storeUser = useMutation(api.users.store);
   const [greeting, setGreeting] = useState("Hello");
+  const [mentalHealthData, setMentalHealthData] = useState<{ date: string; score: number }[]>([]);
 
   useEffect(() => {
     setGreeting(getGreeting());
+  }, []);
+  
+  // Load mental health scores from localStorage
+  useEffect(() => {
+    const scores = JSON.parse(localStorage.getItem('mentalHealthScores') || '{}');
+    const data = Object.entries(scores)
+      .map(([date, score]) => ({ date, score: Number(score) }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    setMentalHealthData(data);
   }, []);
   
   // Sync user with Convex
@@ -159,9 +170,43 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+         </div>
 
-        {/* Charts & Actions Section */}
+         {/* Mental Health Trends */}
+         <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
+           <Card className="glass-card border-none shadow-md">
+             <CardHeader>
+               <CardTitle>Mental Health Trends</CardTitle>
+               <CardDescription>Track your daily check-in scores over time</CardDescription>
+             </CardHeader>
+             <CardContent className="h-[300px]">
+               {mentalHealthData.length > 0 ? (
+                 <ResponsiveContainer width="100%" height="100%">
+                   <LineChart data={mentalHealthData}>
+                     <CartesianGrid strokeDasharray="3 3" />
+                     <XAxis dataKey="date" />
+                     <YAxis domain={[0, 3]} />
+                     <Tooltip />
+                     <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={2} />
+                   </LineChart>
+                 </ResponsiveContainer>
+               ) : (
+                 <div className="flex flex-col items-center justify-center h-full text-center">
+                   <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
+                   <p className="text-muted-foreground">No check-in data yet.</p>
+                   <p className="text-sm text-muted-foreground mt-1">Start with your first daily check-in to see trends!</p>
+                   <Button asChild className="mt-4" size="sm">
+                     <Link href="/check">
+                       Start Check-in <ArrowRight className="ml-2 h-4 w-4" />
+                     </Link>
+                   </Button>
+                 </div>
+               )}
+             </CardContent>
+           </Card>
+         </motion.div>
+
+         {/* Charts & Actions Section */}
         <div className="grid gap-6 md:grid-cols-7">
           <Card className="md:col-span-4 glass-card border-none shadow-md">
             <CardHeader>

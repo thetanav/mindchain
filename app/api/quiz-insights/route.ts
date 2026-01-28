@@ -3,26 +3,13 @@ import { adapter } from "@/lib/ai";
 
 export async function POST(req: Request) {
   try {
-    const { answers, questions, journalContext }: { answers: string[]; questions?: string[]; journalContext?: string } =
-      await req.json();
+    const { messages = [], journalContext = "" } = await req.json();
 
-    const paired = answers
-      .map(
-        (a, i) => `Q${i + 1}: ${questions?.[i] ?? "(question)"}\nA${i + 1}: ${a}`
-      )
-      .join("\n\n");
-
-    const userPrompt = `User Responses:
-    
-${paired}
-
-${journalContext ? `Recent Journal Context:\n${journalContext}\n-- End of Journal Context --` : ''}
-
-Analyze the user's mental health check responses. Provide empathetic, practical insights. Be concise, warm, and actionable. Avoid diagnosis; focus on encouragement and next steps.`;
+    const userPrompt = messages[0]?.content || "";
 
     const stream = chat({
       adapter,
-      systemPrompts: ["You are a supportive mental health assistant. Analyze the user's check-in responses and provide empathetic insights."],
+      systemPrompts: ["You are a supportive mental health assistant."],
       messages: [
         { role: "user", content: userPrompt }
       ]
