@@ -19,8 +19,34 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import SummaryPieChart from "@/components/summary-pie-chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import dynamic from "next/dynamic";
+
+const SummaryPieChart = dynamic(() => import("@/components/summary-pie-chart"), {
+  loading: () => <div>Loading chart...</div>,
+});
+
+const LineChart = dynamic(() => import("recharts").then(mod => ({ default: mod.LineChart })), {
+  loading: () => <div>Loading chart...</div>,
+  ssr: false,
+});
+const Line = dynamic(() => import("recharts").then(mod => ({ default: mod.Line })), {
+  ssr: false,
+});
+const XAxis = dynamic(() => import("recharts").then(mod => ({ default: mod.XAxis })), {
+  ssr: false,
+});
+const YAxis = dynamic(() => import("recharts").then(mod => ({ default: mod.YAxis })), {
+  ssr: false,
+});
+const CartesianGrid = dynamic(() => import("recharts").then(mod => ({ default: mod.CartesianGrid })), {
+  ssr: false,
+});
+const Tooltip = dynamic(() => import("recharts").then(mod => ({ default: mod.Tooltip })), {
+  ssr: false,
+});
+const ResponsiveContainer = dynamic(() => import("recharts").then(mod => ({ default: mod.ResponsiveContainer })), {
+  ssr: false,
+});
 
 function getGreeting() {
   const hour = new Date().getHours();

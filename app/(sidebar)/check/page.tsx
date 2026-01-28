@@ -9,7 +9,12 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
-import { Streamdown } from "streamdown";
+import dynamic from "next/dynamic";
+
+const Streamdown = dynamic(() => import("streamdown").then(mod => ({ default: mod.Streamdown })), {
+  loading: () => <div>Loading...</div>,
+  ssr: false,
+});
 import { useChat, fetchServerSentEvents } from "@tanstack/ai-react";
 
 interface Question {

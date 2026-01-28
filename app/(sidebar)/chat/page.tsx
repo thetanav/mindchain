@@ -9,7 +9,12 @@ import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
-import { Streamdown } from "streamdown";
+import dynamic from "next/dynamic";
+
+const Streamdown = dynamic(() => import("streamdown").then(mod => ({ default: mod.Streamdown })), {
+  loading: () => <div>Loading...</div>,
+  ssr: false,
+});
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const suggestedPrompts = [
