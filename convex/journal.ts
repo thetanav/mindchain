@@ -16,8 +16,28 @@ export const createEntry = mutation({
 
     if (!user) throw new Error("User not found");
 
-    // Streak Logic
     const now = Date.now();
+
+    // Check if user already has an entry for today
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const existingEntry = await ctx.db
+      .query("journal")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.and(
+        q.gte(q.field("createdAt"), today.getTime()),
+        q.lt(q.field("createdAt"), tomorrow.getTime())
+      ))
+      .first();
+    
+    if (existingEntry) {
+      throw new Error("You can only create one journal entry per day");
+    }
+
+    // Streak Logic
     const oneDay = 24 * 60 * 60 * 1000;
     let newStreak = user.streak;
     
@@ -49,6 +69,59 @@ export const createEntry = mutation({
     });
 
     return entryId;
+  },
+});
+
+export const deleteEntry = mutation({
+  args: {
+    userId: v.string(),
+    entryId: v.id("journal"),
+  },
+  handler: async (ctx, args) => {
+    const entry = await ctx.db.get(args.entryId);
+    
+    if (!entry || entry.userId !== args.userId) {
+      throw new Error("Entry not found or access denied");
+    }
+
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    if (entry.createdAt < now - oneDayMs) {
+      throw new Error("You can only delete journal entries that are less than 1 day old");
+    }
+
+    await ctx.db.delete(args.entryId);
+  },
+});
+
+export const updateEntry = mutation({
+  args: {
+    userId: v.string(),
+    entryId: v.id("journal"),
+    content: v.string(),
+    sentiment: v.optional(v.string()),
+    moodScore: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const entry = await ctx.db.get(args.entryId);
+    
+    if (!entry || entry.userId !== args.userId) {
+      throw new Error("Entry not found or access denied");
+    }
+
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    if (entry.createdAt < now - oneDayMs) {
+      throw new Error("You can only edit journal entries that are less than 1 day old");
+    }
+
+    await ctx.db.patch(args.entryId, {
+      content: args.content,
+      sentiment: args.sentiment,
+      moodScore: args.moodScore,
+    });
   },
 });
 

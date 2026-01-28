@@ -22,7 +22,7 @@ const serif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "MindChain - Decentralized Mental Health Support",
+  title: "Mindchain",
   description:
     "Secure, anonymous mental health support powered by blockchain technology",
 };
