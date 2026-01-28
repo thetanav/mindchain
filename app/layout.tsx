@@ -7,6 +7,7 @@ import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { Toaster } from "@/components/ui/toaster";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
               {children}
             </ConvexClientProvider>
             <Toaster />
+            <Analytics />
           </ThemeProvider>
         </body>
       </html>

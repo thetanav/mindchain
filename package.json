@@ -57,6 +57,7 @@
     "@tanstack/ai-ollama": "^0.3.0",
     "@tanstack/ai-react": "^0.2.2",
     "@uploadthing/react": "^7.3.3",
+    "@vercel/analytics": "^1.6.1",
     "ai": "^6.0.54",
     "autoprefixer": "^10.4.23",
     "canvas-confetti": "^1.9.4",

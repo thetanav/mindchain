@@ -23,7 +23,7 @@ export default function Page() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.1 }}
           className="max-w-4xl mx-auto space-y-8"
         >
           <div className="flex items-center w-full justify-center">
@@ -72,10 +72,10 @@ export default function Page() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.1, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+              <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
                 <CardHeader>
                   <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
                     <MessageCircle className="h-6 w-6 text-blue-600" />
