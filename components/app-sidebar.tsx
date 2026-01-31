@@ -14,18 +14,21 @@ import {
   SidebarTrigger,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks } from "lucide-react";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, PlusCircle } from "lucide-react";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
+import { Id } from "../convex/_generated/dataModel";
+import { useRouter } from "next/navigation";
 
 const overviewRoutes = [
   { href: "/home", icon: Home, label: "Home" },
 ];
 
 const toolRoutes = [
-  { href: "/chat", icon: Bot, label: "AI Chat" },
   { href: "/journal", icon: Album, label: "Journal" },
   { href: "/relaxo", icon: AudioWaveform, label: "Relaxo" },
   { href: "/todo", icon: ListChecks, label: "Todo" },
@@ -38,6 +41,18 @@ const communityRoutes = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const router = useRouter();
+
+  const chats = useQuery(api.messages.getChats, user ? { userId: user.id } : "skip");
+  const createChat = useMutation(api.messages.createChat);
+
+  const handleNewChat = async () => {
+    if (user) {
+      const newChatId = await createChat({ userId: user.id, title: "New Chat" });
+      router.push(`/chat/${newChatId}`);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 bg-sidebar/50 backdrop-blur-xl">
@@ -86,6 +101,42 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">Wellness Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+            <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname?.startsWith(`/chat`)}
+                    tooltip="AI Chat"
+                    className="hover:bg-sidebar-accent/50 transition-colors"
+                  >
+                    <Link href="/chat">
+                      <Bot className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                      <span className="font-medium">AI Chat</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              {chats?.map((chat: { _id: Id<"chats">; title: string }) => (
+                <SidebarMenuItem key={chat._id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === `/chat/${chat._id}`}
+                    tooltip={chat.title}
+                    className="hover:bg-sidebar-accent/50 transition-colors"
+                  >
+                    <Link href={`/chat/${chat._id}`}>
+                      <span className="font-medium">{chat.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleNewChat}
+                  className="hover:bg-sidebar-accent/50 transition-colors"
+                >
+                  <PlusCircle className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                  <span className="font-medium">New Chat</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {toolRoutes.map(r => (
                 <SidebarMenuItem key={r.label}>
                   <SidebarMenuButton

@@ -1,5 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { gamify } from "./gamify";
+import { meditations } from "./meditation";
+import { cbtExercises } from "./cbt";
+import { challenges } from "./challenges";
 
 export default defineSchema({
   users: defineTable({
@@ -38,4 +42,8 @@ export default defineSchema({
     content: v.string(),
     createdAt: v.number(),
   }).index("by_chatId", ["chatId"]),
+  gamify,
+  meditations,
+  cbtExercises,
+  challenges,
 });
