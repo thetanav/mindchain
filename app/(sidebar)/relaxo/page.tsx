@@ -115,8 +115,7 @@ export default function CalmRoom() {
   }
 
   return (
-    <div className="h-full bg-gradient-to-br from-background via-muted/50 to-background transition-all duration-1000 flex flex-col">
-      {/* Header */}
+    <div className="h-full bg-background flex flex-col">
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold font-serif text-foreground">
@@ -126,7 +125,6 @@ export default function CalmRoom() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         <PhaseIndicator phase={currentPhase} isActive={isActive} />
 
@@ -140,13 +138,12 @@ export default function CalmRoom() {
 
         <Timer timeRemaining={sessionTime} />
 
-        {/* Controls */}
         <div className="flex items-center gap-4 mt-8">
           {!isActive ? (
             <Button
               onClick={handleStart}
               size="lg"
-              className="px-8 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 text-lg"
+              className="px-8 py-6 rounded-full shadow-lg text-lg"
             >
               <Play className="w-5 h-5 mr-2" />
               Start Session
@@ -156,7 +153,7 @@ export default function CalmRoom() {
               onClick={handlePause}
               size="lg"
               variant="outline"
-              className="px-8 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-sm text-lg"
+              className="px-8 py-6 rounded-full shadow-lg text-lg"
             >
               <Pause className="w-5 h-5 mr-2" />
               Pause
@@ -167,13 +164,12 @@ export default function CalmRoom() {
             onClick={handleReset}
             size="lg"
             variant="outline"
-            className="px-6 py-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-sm"
+            className="px-6 py-6 rounded-full shadow-lg"
           >
             <RotateCcw className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Instructions */}
         {!isActive && sessionTime === TOTAL_SESSION_TIME && (
           <div className="mt-8 text-center max-w-md">
             <p className="text-muted-foreground leading-relaxed">

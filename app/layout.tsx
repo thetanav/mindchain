@@ -1,7 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Instrument_Serif, Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { Toaster } from "@/components/ui/toaster";
@@ -33,21 +32,15 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en">
         <body
           className={`${inter.className} ${serif.variable} font-sans antialiased min-h-screen`}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange>
-            <ConvexClientProvider>
-              <NextTopLoader color="#2563eb" showSpinner={false} />
-              {children}
-            </ConvexClientProvider>
-            <Toaster />
-            <Analytics />
-          </ThemeProvider>
+          <ConvexClientProvider>
+            <NextTopLoader color="#2563eb" showSpinner={false} />
+            {children}
+          </ConvexClientProvider>
+          <Toaster />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>

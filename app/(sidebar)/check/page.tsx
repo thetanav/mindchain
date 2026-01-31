@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCw, Sparkles, CheckCircle2, ChevronDown } from "lucide-react";
-import { Confetti, ConfettiRef } from "@/components/magicui/confetti";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -122,8 +121,6 @@ export default function CheckPage() {
   });
 
   const aiData = messages[1]?.parts.map(p => p.type === "text" ? p.content : "").join("") || null;
-
-  const confettiRef = useRef<ConfettiRef>(null);
 
   const handleAnswer = (answer: string) => {
     const newAnswers = [...answers, answer];
@@ -246,26 +243,11 @@ Analyze the user's mental health check responses. Provide empathetic, practical 
     }
   }, [isLoading, messages, saved, saveCheckIn, user, answers]);
 
-  // Fire confetti exactly when results are shown to the user
-  useEffect(() => {
-    if (!showResults) return;
-    // Defer to ensure ref is attached after the results view mounts
-    const id = requestAnimationFrame(() => {
-      confettiRef.current?.fire?.({});
-    });
-    return () => cancelAnimationFrame(id);
-  }, [showResults]);
-
   const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   if (showResults) {
     return (
       <div className="max-w-4xl mx-auto p-6 relative">
-        <Confetti
-          ref={confettiRef}
-          className="absolute left-0 top-0 z-0 size-full pointer-events-none"
-        />
-
         <motion.div 
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}

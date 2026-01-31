@@ -153,7 +153,7 @@ export default function TodoPage() {
             orientation="horizontal"
             className="w-full"
           >
-            <KanbanBoard className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[600px]">
+            <KanbanBoard className="gap-6 min-h-[600px]">
               {(Object.keys(kanbanData) as Array<keyof KanbanData>).map((columnId, index) => (
                 <motion.div
                   key={columnId}

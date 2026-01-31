@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowDown, ArrowUpRight, Brain, Users, MessageCircle, PenTool, Wind, Activity } from "lucide-react";
 import { Instrument_Serif } from "next/font/google";
 import { Button } from "@/components/ui/button";
-import { AnimatedGradient } from "@/components/animated-gradient";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StripedPattern } from "@/components/magicui/striped-pattern";
 
 const serif = Instrument_Serif({
   subsets: ["latin"],
@@ -17,18 +14,10 @@ const serif = Instrument_Serif({
 
 export default function Page() {
   return (
-    <div className="flex flex-col min-h-screen relative overflow-hidden">
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-4 py-28 md:py-36 text-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.1 }}
-          className="max-w-4xl mx-auto space-y-8"
-        >
-          <div className="flex items-center w-full justify-center">
-            <AnimatedGradient />
-          </div>
+    <div className="flex flex-col min-h-screen">
+      <section className="flex flex-col items-center justify-center px-4 py-28 md:py-36 text-center">
+        <div className="max-w-4xl mx-auto space-y-8">
+
           <h1
             className={
               "text-5xl font-bold tracking-tight sm:text-6xl md:text-8xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 " +
@@ -55,9 +44,9 @@ export default function Page() {
               </Link>
             </Button>
           </div>
-        </motion.div>
+        </div>
 
-        <StripedPattern className="[mask-image:radial-gradient(400px_circle_at_center,white,transparent)] -z-10 opacity-40" />
+
       </section>
 
       {/* Tools Section */}
@@ -69,15 +58,10 @@ export default function Page() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.1, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <MessageCircle className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">AI Companion</CardTitle>
@@ -88,17 +72,12 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <PenTool className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">Smart Journaling</CardTitle>
@@ -109,17 +88,12 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <Wind className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">Calm Room</CardTitle>
@@ -130,17 +104,12 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <Users className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">Community Groups</CardTitle>
@@ -151,17 +120,12 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <Activity className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">Health Check-ins</CardTitle>
@@ -172,17 +136,12 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
+            <div>
+              <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
                     <Brain className="h-6 w-6 text-blue-600" />
                   </div>
                   <CardTitle className="text-xl">Mood Tracking</CardTitle>
@@ -193,14 +152,13 @@ export default function Page() {
                   </p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 px-4 bg-blue-600 text-white relative overflow-hidden">
-        <div className="max-w-3xl mx-auto text-center relative z-10">
+      <section className="py-24 px-4 bg-blue-600 text-white">
+        <div className="max-w-3xl mx-auto text-center">
           <h2 className={`text-4xl md:text-5xl font-bold mb-8 ${serif.className}`}>
             Ready to Prioritize Your Mind?
           </h2>

@@ -36,6 +36,8 @@ const KanbanContext = React.createContext<{
   setActiveColumn: (column: string | null) => void
   activeItem: unknown | null
   setActiveItem: (item: unknown | null) => void
+  itemListeners: any
+  setItemListeners: (listeners: any) => void
 } | null>(null)
 
 function useKanban() {
@@ -70,6 +72,7 @@ const Kanban = React.forwardRef<HTMLDivElement, KanbanProps>(
     const [activeId, setActiveId] = React.useState<string | null>(null)
     const [activeColumn, setActiveColumn] = React.useState<string | null>(null)
     const [activeItem, setActiveItem] = React.useState<unknown | null>(null)
+    const [itemListeners, setItemListeners] = React.useState<any>(null)
 
     const sensors = useSensors(
       useSensor(PointerSensor, {
@@ -195,20 +198,22 @@ const Kanban = React.forwardRef<HTMLDivElement, KanbanProps>(
     }
 
     return (
-      <KanbanContext.Provider
-        value={{
-          value,
-          onValueChange,
-          getItemValue,
-          orientation,
-          activeId,
-          setActiveId,
-          activeColumn,
-          setActiveColumn,
-          activeItem,
-          setActiveItem,
-        }}
-      >
+        <KanbanContext.Provider
+          value={{
+            value,
+            onValueChange,
+            getItemValue,
+            orientation,
+            activeId,
+            setActiveId,
+            activeColumn,
+            setActiveColumn,
+            activeItem,
+            setActiveItem,
+            itemListeners,
+            setItemListeners,
+          }}
+        >
         <DndContext
           sensors={sensors}
           onDragStart={handleDragStart}
@@ -305,7 +310,7 @@ const KanbanColumn = React.forwardRef<HTMLDivElement, KanbanColumnProps>(
         {...props}
       >
         <SortableContext
-          items={[value, ...items.map((item, index) => `${value}-${index}`)]}
+          items={[value, ...items.map((item) => getItemValue?.(item) || "")]}
           strategy={
             orientation === "vertical"
               ? verticalListSortingStrategy
@@ -373,22 +378,26 @@ interface KanbanItemProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string | number
 }
 
-const KanbanItem = React.forwardRef<HTMLDivElement, KanbanItemProps>(
-  ({ className, value, children, ...props }, ref) => {
-    const { activeId, activeItem } = useKanban()
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
-      id: value,
-      data: {
-        type: "item",
-      },
-    })
+  const KanbanItem = React.forwardRef<HTMLDivElement, KanbanItemProps>(
+    ({ className, value, children, ...props }, ref) => {
+      const { activeId, activeItem, setItemListeners } = useKanban()
+      const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+      } = useSortable({
+        id: value,
+        data: {
+          type: "item",
+        },
+      })
+
+      React.useEffect(() => {
+        setItemListeners(listeners)
+      }, [listeners, setItemListeners])
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -429,41 +438,18 @@ const KanbanItemHandle = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
 >(({ className, ...props }, ref) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    isDragging,
-  } = useSortable({
-    id: "item-handle",
-    data: {
-      type: "item",
-    },
-  })
+  const { itemListeners } = useKanban()
 
   return (
     <Button
-      ref={(node) => {
-        if (ref) {
-          if (typeof ref === 'function') {
-            ref(node)
-          } else {
-            ref.current = node
-          }
-        }
-        setNodeRef(node)
-      }}
+      ref={ref}
       variant="ghost"
       size="sm"
       className={cn(
         "cursor-grab active:cursor-grabbing h-6 w-6 p-0",
-        isDragging && "cursor-grabbing",
         className
       )}
-      data-disabled={isDragging}
-      data-dragging={isDragging}
-      {...attributes}
-      {...listeners}
+      {...itemListeners}
       {...props}
     >
       <GripVertical className="h-3 w-3" />
