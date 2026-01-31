@@ -36,7 +36,7 @@ export default function RootLayout({
         <body
           className={`${inter.className} ${serif.variable} font-sans antialiased min-h-screen`}>
           <ConvexClientProvider>
-            <NextTopLoader color="#2563eb" showSpinner={false} />
+            <NextTopLoader color="#4f46e5" showSpinner={false} />
             {children}
           </ConvexClientProvider>
           <Toaster />
