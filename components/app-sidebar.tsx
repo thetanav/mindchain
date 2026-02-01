@@ -15,7 +15,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, Gamepad2 } from "lucide-react";
+import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, Gamepad2, Music2 } from "lucide-react";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
@@ -26,6 +26,7 @@ const overviewRoutes = [
 
 const toolRoutes = [
   { href: "/journal", icon: Album, label: "Journal" },
+  { href: "/lofi", icon: Music2, label: "Lofi" },
   { href: "/relaxo", icon: AudioWaveform, label: "Relaxo" },
   { href: "/todo", icon: ListChecks, label: "Todo" },
   { href: "/check", icon: CircleCheck, label: "Quiz" },

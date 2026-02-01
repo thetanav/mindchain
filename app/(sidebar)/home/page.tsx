@@ -8,6 +8,7 @@ import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { DailyQuizDialog } from "@/components/daily-quiz-dialog";
 import {
   Card,
   CardContent,
@@ -75,6 +76,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen w-full">
+      <DailyQuizDialog />
       <div className="container py-8 max-w-7xl mx-auto space-y-8 px-6 md:px-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
           <div className="space-y-2">
