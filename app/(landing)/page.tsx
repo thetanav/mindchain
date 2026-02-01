@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowDown, ArrowUpRight, Brain, Users, MessageCircle, PenTool, Wind, Activity, Heart, Music, Zap, BookOpen, CheckCircle, Trophy, Sparkles, Flame, Bot, ListChecks, Gamepad2 } from "lucide-react";
 import { Instrument_Serif } from "next/font/google";
 import { Button } from "@/components/ui/button";
@@ -117,28 +118,29 @@ export default function Page() {
     <div className="flex flex-col min-h-screen">
       <section className="relative flex flex-col items-center justify-center px-4 py-28 md:py-36 text-center overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-100/30 via-background to-background dark:from-indigo-950/20 dark:via-background dark:to-background" />
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="relative max-w-4xl mx-auto space-y-8 z-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Your Mental Wellness Journey Starts Here</span>
+          <div className="flex justify-center mb-4">
+            <Image src="/logo.png" alt="Mindchain Logo" width={100} height={100} className="w-24 h-24 md:w-32 md:h-32" />
           </div>
+
+
 
           <h1 className={`text-5xl font-bold tracking-tight sm:text-6xl md:text-8xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 ${serif.className}`}>
             Your Mind, <br />
             <span className="text-foreground">Your Way</span>
           </h1>
-          
+
           <p className="max-w-2xl mx-auto text-xl text-muted-foreground leading-relaxed">
-            A complete wellness companion with AI support, mood tracking, meditation, 
+            A complete wellness companion with AI support, mood tracking, meditation,
             and community features—all designed to help you thrive.
           </p>
-          
+
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full px-8 h-12 text-base shadow-lg shadow-indigo-500/25" asChild>
               <Link href="/home">
@@ -173,7 +175,7 @@ export default function Page() {
 
       <section className="py-24 px-4 bg-muted/30" id="features">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

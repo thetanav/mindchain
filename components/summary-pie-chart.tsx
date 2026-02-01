@@ -48,7 +48,8 @@ export function SummaryPieChart({ data }: { data: Slice[] }) {
           cy="50%"
           innerRadius={50}
           outerRadius={90}
-          paddingAngle={2}>
+          paddingAngle={2}
+          animationDuration={0}>
           {data.map((entry, index) => (
             <Cell
               key={`cell-${entry.name}`}

@@ -36,7 +36,7 @@ const meditations: Meditation[] = [
     description: "Bring awareness to different parts of your body and release tension.",
     icon: Sparkles,
     color: "from-purple-500 to-pink-500",
-    youtubeId: "5jca-sWgemI",
+    youtubeId: "Gqfk5sr9fpw",
   },
   {
     title: "Loving-Kindness",
@@ -44,7 +44,7 @@ const meditations: Meditation[] = [
     description: "Cultivate feelings of love and compassion for yourself and others.",
     icon: Heart,
     color: "from-rose-500 to-red-500",
-    youtubeId: "Gqfk5sr9fpw",
+    youtubeId: "5jca-sWgemI",
   },
 ];
 
@@ -139,11 +139,10 @@ export default function MeditationPage() {
             <Card
               key={meditation.title}
               onClick={() => setSelectedMeditation(meditation)}
-              className={`cursor-pointer border-0 bg-gradient-to-br from-card to-card/50 h-full transition-all duration-300 hover:shadow-xl ${
-                selectedMeditation?.title === meditation.title
+              className={`cursor-pointer border-0 bg-gradient-to-br from-card to-card/50 h-full transition-all duration-300 hover:shadow-xl ${selectedMeditation?.title === meditation.title
                   ? "ring-2 ring-primary"
                   : ""
-              }`}
+                }`}
             >
               <CardHeader className="relative">
                 {selectedMeditation?.title === meditation.title && (
@@ -187,9 +186,8 @@ export default function MeditationPage() {
                 ref={iframeRef}
                 width="100%"
                 height="100%"
-                src={`https://www.youtube.com/embed/${selectedMeditation.youtubeId}?enablejsapi=1&mute=0&autoplay=${
-                  isPlaying ? 1 : 0
-                }&loop=1&controls=1&modestbranding=1&rel=0`}
+                src={`https://www.youtube.com/embed/${selectedMeditation.youtubeId}?enablejsapi=1&mute=0&autoplay=${isPlaying ? 1 : 0
+                  }&loop=1&controls=1&modestbranding=1&rel=0`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={selectedMeditation.title}

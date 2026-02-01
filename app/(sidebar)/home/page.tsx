@@ -10,6 +10,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DailyQuizDialog } from "@/components/daily-quiz-dialog";
 import { CheckinHeatmap } from "@/components/checkin-heatmap";
+import { WellnessInfoDialog } from "@/components/wellness-info-dialog";
+import { StatInfoDialog } from "@/components/stat-info-dialog";
 import {
   Card,
   CardContent,
@@ -20,24 +22,17 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
-const SummaryPieChart = dynamic(() => import("@/components/summary-pie-chart"), {
-  ssr: false,
-  loading: () => <div className="h-full flex items-center justify-center text-muted-foreground">Loading chart...</div>,
-});
-
-const LineChart = dynamic(() => import("recharts").then(mod => mod.LineChart), {
-  ssr: false,
-  loading: () => <div className="h-full flex items-center justify-center text-muted-foreground">Loading chart...</div>,
-});
-const Line = dynamic(() => import("recharts").then(mod => mod.Line), { ssr: false });
-const XAxis = dynamic(() => import("recharts").then(mod => mod.XAxis), { ssr: false });
-const YAxis = dynamic(() => import("recharts").then(mod => mod.YAxis), { ssr: false });
-const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.CartesianGrid), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
-const Area = dynamic(() => import("recharts").then(mod => mod.Area), { ssr: false });
-const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Area,
+  ResponsiveContainer
+} from "recharts";
+import { SummaryPieChart } from "@/components/summary-pie-chart";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -46,10 +41,37 @@ function getGreeting() {
   return "Good evening";
 }
 
+const mockWellnessData = Array.from({ length: 30 }, (_, i) => {
+  const date = new Date();
+  date.setDate(date.getDate() - (29 - i));
+  return {
+    date: date.toISOString().split("T")[0],
+    score: 1.5 + Math.random() * 1.5,
+  };
+});
+
+const mockSentimentData = [
+  { name: "Positive", value: 12 },
+  { name: "Neutral", value: 5 },
+  { name: "Negative", value: 2 },
+];
+
+const mockHeatmapData = Array.from({ length: 90 }, (_, i) => {
+  const date = new Date();
+  date.setDate(date.getDate() - (89 - i));
+  const hasData = Math.random() > 0.4;
+  return {
+    date: date.toISOString().split("T")[0],
+    intensity: hasData ? Math.floor(Math.random() * 100) : 0,
+    hasData,
+  };
+});
+
 export default function DashboardPage() {
   const { user } = useUser();
   const storeUser = useMutation(api.users.store);
   const [greeting, setGreeting] = useState("Hello");
+  const [useMockData, setUseMockData] = useState(false);
 
   useEffect(() => {
     setGreeting(getGreeting());
@@ -71,23 +93,40 @@ export default function DashboardPage() {
   const sentimentData = useQuery(api.journal.getSentimentDistribution, user ? { userId: user.id } : "skip");
   const heatmapData = useQuery(api.checkins.getHeatmapData, user ? { userId: user.id } : "skip");
 
-  const streak = userData?.streak || 0;
-  const coins = userData?.coins || 0;
-  const totalEntries = journalStats?.totalEntries || 0;
-  const pieChartData = sentimentData?.filter(d => d.value > 0) || [];
+  const isLoading = wellnessData === undefined || heatmapData === undefined || sentimentData === undefined;
+
+  useEffect(() => {
+    if (user && isLoading && !useMockData) {
+      const timer = setTimeout(() => {
+        setUseMockData(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, isLoading, useMockData]);
+
+  const streak = userData && typeof userData.streak === "number" ? userData.streak : (useMockData ? 7 : 0);
+  const coins = userData && typeof userData.coins === "number" ? userData.coins : (useMockData ? 45 : 0);
+  const totalEntries = journalStats && typeof journalStats.totalEntries === "number" ? journalStats.totalEntries : (useMockData ? 19 : 0);
+  
+  const displayWellnessData = (wellnessData && wellnessData.length > 0 ? wellnessData : (useMockData ? mockWellnessData : [])) || [];
+  const displaySentimentData = (sentimentData && sentimentData.filter(d => d.value > 0).length > 0 ? sentimentData : (useMockData ? mockSentimentData : [])) || [];
+  const displayHeatmapData = (heatmapData && heatmapData.length > 0 ? heatmapData : (useMockData ? mockHeatmapData : [])) || [];
 
   return (
     <div className="min-h-screen w-full">
       <DailyQuizDialog />
       <div className="container py-8 max-w-7xl mx-auto space-y-8 px-6 md:px-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-          <div className="space-y-2">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight font-serif">
-              {greeting}, {user?.firstName || "Friend"}
-            </h1>
-            <p className="text-muted-foreground text-lg md:text-xl font-light tracking-wide">
-              Your mind is a garden. Let&apos;s tend to it today.
-            </p>
+          <div className="flex items-center gap-4">
+            <Image src="/logo.png" alt="Mindchain Logo" width={60} height={60} className="w-12 h-12 md:w-16 md:h-16" />
+            <div className="space-y-2">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight font-serif">
+                {greeting}, {user?.firstName || "Friend"}
+              </h1>
+              <p className="text-muted-foreground text-lg md:text-xl font-light tracking-wide">
+                Your mind is a garden. Let&apos;s tend to it today.
+              </p>
+            </div>
           </div>
           <Button asChild size="lg" className="rounded-full px-8 py-6 text-lg">
             <Link href="/journal">
@@ -100,9 +139,12 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
           <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Journal Streak
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  Journal Streak
+                </CardTitle>
+                <StatInfoDialog type="streak" />
+              </div>
               <Award className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -113,7 +155,10 @@ export default function DashboardPage() {
 
           <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coins</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coins</CardTitle>
+                <StatInfoDialog type="coins" />
+              </div>
               <Coins className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
@@ -127,9 +172,12 @@ export default function DashboardPage() {
 
           <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Entries
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  Entries
+                </CardTitle>
+                <StatInfoDialog type="entries" />
+              </div>
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
@@ -162,39 +210,52 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-12">
           <Card className="md:col-span-8">
             <CardHeader>
-              <CardTitle className="font-serif text-2xl">Wellness Trends</CardTitle>
-              <CardDescription>Your emotional journey over time</CardDescription>
+              <div className="flex items-center gap-2">
+                <CardTitle className="font-serif text-2xl">Wellness Trends</CardTitle>
+                <WellnessInfoDialog />
+              </div>
+              <CardDescription>Your quiz scores over time (based on daily check-ins)</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 min-h-[300px]">
-              {wellnessData && wellnessData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={wellnessData}>
-                    <defs>
-                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis domain={[0, 3]} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                    <Area type="monotone" dataKey="score" stroke="transparent" fill="url(#colorScore)" />
-                    <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "#fff" }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-secondary/30 rounded-xl">
-                  <TrendingUp className="h-10 w-10 text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground font-medium">No check-in data yet</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1 max-w-xs">Start your first daily check-in to unlock these insights!</p>
-                  <Button asChild className="mt-6 rounded-full" size="sm" variant="outline">
-                    <Link href="/check">
-                      Start Check-in <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              )}
+            <CardContent className="h-[300px]">
+              <div className="h-full w-full">
+                {!isLoading && displayWellnessData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={displayWellnessData}>
+                      <defs>
+                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis domain={[0, 3]} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <Area type="monotone" dataKey="score" stroke="transparent" fill="url(#colorScore)" />
+                      <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "#fff" }} animationDuration={0} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : isLoading && !useMockData ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-secondary/30 rounded-xl">
+                    <TrendingUp className="h-10 w-10 text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground font-medium">No check-in data yet</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1 max-w-xs">Start your first daily check-in to unlock these insights!</p>
+                    <Button asChild className="mt-4 rounded-full" size="sm" variant="outline">
+                      <Link href="/check">
+                        Start Check-in <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -205,8 +266,8 @@ export default function DashboardPage() {
                 <CardDescription>Your recent emotional palette</CardDescription>
               </CardHeader>
               <CardContent className="h-[250px] flex items-center justify-center">
-                {pieChartData.length > 0 ? (
-                  <SummaryPieChart data={pieChartData} />
+                {displaySentimentData && displaySentimentData.length > 0 ? (
+                  <SummaryPieChart data={displaySentimentData} />
                 ) : (
                   <div className="text-center text-muted-foreground">No mood data yet.</div>
                 )}
@@ -219,8 +280,8 @@ export default function DashboardPage() {
                 <CardDescription>Your daily check-in consistency</CardDescription>
               </CardHeader>
               <CardContent>
-                {heatmapData && heatmapData.length > 0 ? (
-                  <CheckinHeatmap data={heatmapData} />
+                {displayHeatmapData && displayHeatmapData.length > 0 ? (
+                  <CheckinHeatmap data={displayHeatmapData} />
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <div className="text-muted-foreground mb-2">No check-in data yet</div>

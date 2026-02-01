@@ -91,7 +91,6 @@ export const hasCheckedInToday = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .collect();
     
-    // Check if there's a check-in today (after start of day)
     const hasToday = checkins.some(checkin => checkin.createdAt >= startOfDay.getTime());
     
     return { hasCheckedIn: hasToday };

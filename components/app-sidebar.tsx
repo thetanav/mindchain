@@ -49,10 +49,10 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center justify-between px-2 py-4">
           <Link href="/" className="flex items-center gap-3 group-data-[collapsible=icon]:hidden transition-all">
-            <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
-               <Image src="/logo.png" alt="Mindchain" width={32} height={32} className="object-cover w-full h-full" />
+            <div className="w-12 h-12 rounded-lg overflow-hidden">
+              <Image src="/logo.png" alt="Mindchain" width={100} height={100} className="object-center w-full h-full" />
             </div>
-            <h2 className="text-xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+            <h2 className="text-2xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
               Mindchain
             </h2>
           </Link>
@@ -84,26 +84,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         <SidebarSeparator className="mx-4 my-4 opacity-50" />
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-4 mb-2">Wellness Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-            <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname?.startsWith(`/chat`)}
-                    tooltip="AI Chat"
-                    className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
-                  >
-                    <Link href="/chat">
-                      <Bot className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span className="font-medium">AI Chat</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname?.startsWith(`/chat`)}
+                  tooltip="AI Chat"
+                  className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
+                >
+                  <Link href="/chat">
+                    <Bot className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span className="font-medium">AI Chat</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {toolRoutes.map(r => (
                 <SidebarMenuItem key={r.label}>
                   <SidebarMenuButton
@@ -129,7 +129,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-4 mb-2">Connect</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-               {communityRoutes.map(r => (
+              {communityRoutes.map(r => (
                 <SidebarMenuItem key={r.label}>
                   <SidebarMenuButton
                     asChild
@@ -159,15 +159,15 @@ export function AppSidebar() {
         </SignedOut>
         <SignedIn>
           <div className="flex items-center gap-3 w-full p-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border/50">
-             <UserButton afterSignOutUrl="/" appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8 rounded-lg"
-                }
-             }}/>
-             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <span className="text-xs font-medium">My Account</span>
-                <span className="text-[10px] text-muted-foreground">Manage settings</span>
-             </div>
+            <UserButton afterSignOutUrl="/" appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 rounded-lg"
+              }
+            }} />
+            <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+              <span className="text-xs font-medium">My Account</span>
+              <span className="text-[10px] text-muted-foreground">Manage settings</span>
+            </div>
           </div>
         </SignedIn>
       </SidebarFooter>

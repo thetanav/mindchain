@@ -126,7 +126,7 @@ export function CheckinHeatmap({ data }: CheckinHeatmapProps) {
                   return (
                     <div
                       key={day.date}
-                      className={`w-3 h-3 rounded-sm transition-all cursor-pointer hover:scale-125 ${getIntensityColor(
+                      className={`w-3 h-3 rounded-sm cursor-pointer ${getIntensityColor(
                         day.intensity
                       )} ${isToday ? "ring-2 ring-primary ring-offset-1" : ""}`}
                       title={`${formatDate(day.date)}: ${day.hasData ? `${day.intensity}%` : "No check-in"}`}

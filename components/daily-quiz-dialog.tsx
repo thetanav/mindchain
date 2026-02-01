@@ -32,6 +32,22 @@ const questions: Question[] = [
   },
 ];
 
+const QUIZ_DONE_TODAY_KEY = "mindchain_quiz_done_today";
+
+function getTodayDateString() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function hasQuizBeenDoneToday(): boolean {
+  const stored = localStorage.getItem(QUIZ_DONE_TODAY_KEY);
+  if (!stored) return false;
+  return stored === getTodayDateString();
+}
+
+function markQuizDoneToday() {
+  localStorage.setItem(QUIZ_DONE_TODAY_KEY, getTodayDateString());
+}
+
 export function DailyQuizDialog() {
   const { user } = useUser();
   const router = useRouter();
@@ -39,6 +55,7 @@ export function DailyQuizDialog() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [hasCheckedToday, setHasCheckedToday] = useState(false);
 
   const checkinStatus = useQuery(
     api.checkins.hasCheckedInToday,
@@ -47,9 +64,16 @@ export function DailyQuizDialog() {
 
   useEffect(() => {
     if (user && checkinStatus !== undefined) {
-      if (!checkinStatus.hasCheckedIn) {
-        setIsOpen(true);
+      const alreadyDoneToday = hasQuizBeenDoneToday();
+      const hasCheckedInToday = checkinStatus.hasCheckedIn;
+
+      if (alreadyDoneToday || hasCheckedInToday) {
+        setHasCheckedToday(true);
+        return;
       }
+
+      setIsOpen(true);
+      markQuizDoneToday();
     }
   }, [user, checkinStatus]);
 
@@ -73,7 +97,7 @@ export function DailyQuizDialog() {
     setShowWelcome(false);
   };
 
-  if (!user) return null;
+  if (!user || hasCheckedToday) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

@@ -1,12 +1,14 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Twitter } from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="border-t py-6 md:py-10">
       <div className="container flex items-center justify-between gap-4 md:flex-row">
-        <div className="flex flex-col md:gap-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
           <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Mindchain Logo" width={32} height={32} className="w-8 h-8" />
             <span className="text-lg font-bold">MindChain</span>
           </Link>
           <p className="text-center text-xs text-muted-foreground md:text-left">
