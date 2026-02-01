@@ -47,10 +47,13 @@ MindChain is a comprehensive mental health and wellness web application powered 
 - **Location:** `/check`
 - **Description:** Interactive wellness assessments
 - **Features:**
-  - Personalized questions
+  - Personalized 10-question wellness assessment
   - AI-generated insights from responses
   - Historical tracking
   - Progress visualization
+  - Wellness trend charts
+  - 90-day activity heatmap
+  - Automatic coin rewards (+5 coins per check-in)
 
 ### 4. CBT Therapy Exercises
 - **Location:** `/cbt`
@@ -83,21 +86,35 @@ MindChain is a comprehensive mental health and wellness web application powered 
 - **Location:** `/challenges`
 - **Description:** Community wellness challenges
 - **Features:**
-  - Join wellness challenges
-  - Track participation
+  - Join wellness challenges with duration-based goals
+  - Track daily progress and completed days
   - Community leaderboards
   - Duration-based goals
+  - Coin and streak rewards upon completion
+  - Progress persistence through Convex
 
 ### 8. Mind Games
 - **Location:** `/games`
 - **Description:** Curated brain-training games for mental wellness
 - **Features:**
-  - Puzzle games (Blockbuster Puzzle, Mahjong)
-  - Strategy games (2048, Hex Frvr)
+  - Puzzle games (Blockbuster Puzzle, Color Fill 3D, Pixel Sphere 3D)
+  - Strategy games (Man Runner 2048, Hex Frvr, Dot King)
+  - Mahjong games (Mahjongg Solitaire, Mahjong Puzzle Tile Match)
   - Relaxing gameplay options
   - Stress relief through engagement
 
-### 9. Community Support
+### 9. Lofi Radio
+- **Location:** `/lofi`
+- **Description:** Curated lo-fi music streams for focus and relaxation
+- **Features:**
+  - Multiple live radio channels (Lofi Girl, Coffee Shop Vibes, Night Study Beats)
+  - Embedded YouTube streams
+  - Play/pause and mute controls
+  - Station switching with live viewer counts
+  - Animated audio visualizers
+  - Listening tips for optimal experience
+
+### 10. Community Support
 - **Location:** `/community`
 - **Description:** Anonymous peer support community
 - **Features:**
@@ -106,7 +123,7 @@ MindChain is a comprehensive mental health and wellness web application powered 
   - Community interactions
   - Moderated discussions
 
-### 10. Todo/Goals Management
+### 11. Todo/Goals Management
 - **Location:** `/todo`
 - **Description:** Goal setting and habit tracking
 - **Features:**
@@ -115,7 +132,7 @@ MindChain is a comprehensive mental health and wellness web application powered 
   - Progress tracking
   - Habit streak monitoring
 
-### 11. Mental Health Assessment
+### 12. Mental Health Assessment
 - **Location:** `/test`
 - **Description:** Psychological wellness assessments
 - **Features:**
@@ -124,7 +141,7 @@ MindChain is a comprehensive mental health and wellness web application powered 
   - Recommendations based on results
   - Progress tracking over time
 
-### 12. Dashboard (Home)
+### 13. Dashboard (Home)
 - **Location:** `/home`
 - **Description:** Central wellness command center
 - **Features:**
@@ -163,6 +180,13 @@ MindChain is a comprehensive mental health and wellness web application powered 
 - Visual streak display
 - Daily check-in bonuses
 - Milestone celebrations with confetti
+- Progress persistence through Convex
+
+### Wellness Trends
+- Daily wellness scores calculated from check-in responses
+- Interactive trend visualization over time
+- 90-day heatmap data for activity tracking
+- Deduplicated daily scores (latest value per day)
 
 ---
 
@@ -185,11 +209,21 @@ MindChain is a comprehensive mental health and wellness web application powered 
 - Pattern recognition in user behavior
 - Proactive wellness suggestions
 - Burnout risk prediction (future)
+- Wellness trend calculation from check-in responses
+- Interactive heatmap data for 90-day activity visualization
 
 ### Voice Interaction (Future)
 - Voice-to-text journaling
 - Voice chat with AI companion
 - Speech synthesis for responses
+
+### Ambient Audio
+- Lofi Hip Hop Radio streams
+- Multiple curated channels (Lofi Girl, Coffee Shop Vibes, Night Study Beats)
+- Embedded YouTube live streams
+- Audio controls (play/pause, mute)
+- Station switching with live viewer counts
+- Animated audio visualizers
 
 ---
 
@@ -243,16 +277,58 @@ MindChain is a comprehensive mental health and wellness web application powered 
 }
 ```
 
+### Challenges Table
+```typescript
+{
+  title: string,
+  description: string,
+  icon?: string,
+  color?: string,
+  duration: number,
+  coinsReward?: number,
+  streakReward?: number
+}
+```
+
+### User Challenges Table
+```typescript
+{
+  userId: string,
+  challengeId: id,
+  progress: number,
+  completedDays: number[],
+  startedAt: number,
+  lastCompletedAt?: number,
+  isCompleted: boolean
+}
+```
+
 ---
 
 ## API Routes
 
 | Route | Purpose |
-|-------|---------|
 | `/api/chat` | AI companion chat interface |
+|-------|---------|
 | `/api/analysis` | Sentiment & mood analysis |
 | `/api/quiz-insights` | Quiz result interpretation |
 | `/api/uploadthing` | File upload handling |
+
+---
+
+## Convex Database Functions
+
+| Function | Purpose |
+|----------|---------|
+| `checkins.saveResult` | Save daily check-in with answers and AI insight |
+| `checkins.getHistory` | Retrieve user's check-in history |
+| `checkins.getWellnessTrends` | Calculate wellness scores over time |
+| `checkins.hasCheckedInToday` | Check if user checked in today |
+| `checkins.getHeatmapData` | Get 90-day activity heatmap data |
+| `challenges.getChallenges` | Fetch all available challenges |
+| `challenges.getChallengeWithProgress` | Get challenges with user's progress |
+| `challenges.joinChallenge` | User joins a challenge |
+| `challenges.updateProgress` | Update daily progress for a challenge |
 
 ---
 
@@ -261,6 +337,8 @@ MindChain is a comprehensive mental health and wellness web application powered 
 ### Core Components
 - `app-sidebar.tsx` - Navigation sidebar with user info
 - `navbar.tsx` - Top navigation bar
+- `auth-provider.tsx` - Authentication context provider
+- `footer.tsx` - Page footer
 - `breathing-circle.tsx` - Animated breathing guide
 - `mood-chart.tsx` - Mood trend visualization
 - `progress-chart.tsx` - Progress tracking charts
@@ -282,6 +360,7 @@ MindChain is a comprehensive mental health and wellness web application powered 
 - Input, Textarea
 - Sidebar (custom)
 - Select, Checkbox
+- Skeleton loaders
 - And more...
 
 ### Third-Party Integrations
@@ -350,18 +429,23 @@ mindchain/
 │   └── ...
 ├── convex/                 # Database & server functions
 │   ├── schema.ts
+│   ├── auth.config.ts
 │   ├── cbt.ts
 │   ├── challenges.ts
 │   ├── chat.ts
+│   ├── checkins.ts
 │   ├── gamify.ts
 │   ├── journal.ts
 │   ├── meditation.ts
-│   └── messages.ts
+│   ├── messages.ts
+│   └── users.ts
 ├── lib/
 │   ├── ai.ts               # AI configuration
 │   ├── games.ts            # Games catalog
-│   ├── utils.ts
-│   └── ...
+│   ├── comm.ts             # Community utilities
+│   ├── sse.ts              # Server-sent events
+│   ├── compose-refs.ts     # React ref utilities
+│   └── utils.ts
 ├── hooks/
 │   └── use-toast.ts
 ├── types/
@@ -422,18 +506,21 @@ npm start
 ## Future Improvements (Roadmap)
 
 ### Phase 1: Core Experience Enhancements
-- [ ] Unified Dashboard with command center
+- [x] Unified Dashboard with command center
+- [x] Gamification V1 (MindCoins, streaks, badges)
+- [x] Daily Check-ins with wellness scoring
+- [x] Challenges system with progress tracking
+- [x] Lofi Radio for ambient audio
 - [ ] RAG implementation for AI memory
 - [ ] Real-time sentiment analysis feedback
 - [ ] Mood-based UI color adaptation
-- [ ] MindCoins reward system expansion
 
 ### Phase 2: "Wow" Features (Hackathon Impact)
 - [ ] **Voice Interaction:** Web Speech API & ElevenLabs integration
 - [ ] **MindGarden:** 3D/SVG interactive wellness garden (Three.js)
 - [ ] **Predictive Well-being:** AI burnout risk prediction
 - [ ] **Collaborative Communities:** Anonymous support groups with AI moderation
-- [ ] **Group Challenges:** Shared wellness goals
+- [x] **Group Challenges:** Shared wellness goals (implemented)
 
 ### Phase 3: UX/UI Polish
 - [ ] OKLCH dynamic themes by mood
@@ -441,7 +528,7 @@ npm start
 - [ ] "Soul Map" word cloud visualization
 - [ ] Micro-interactions & haptic feedback
 - [ ] Smooth page transitions
-- [ ] Skeleton loaders for AI content
+- [x] Skeleton loaders for AI content
 
 ### Phase 4: Technical Excellence
 - [ ] **Offline Mode:** PWA support for offline journaling
