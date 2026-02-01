@@ -15,13 +15,6 @@ type Slice = {
   value: number;
 };
 
-const data: Slice[] = [
-  { name: "Laziness", value: 35 },
-  { name: "Stress", value: 15 },
-  { name: "Anxiety", value: 25 },
-  { name: "Depression", value: 25 },
-];
-
 const COLORS = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
@@ -43,7 +36,7 @@ function TooltipContent({ active, payload }: any) {
   return null;
 }
 
-export function SummaryPieChart() {
+export function SummaryPieChart({ data }: { data: Slice[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
       <PieChart>

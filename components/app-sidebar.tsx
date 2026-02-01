@@ -15,14 +15,10 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, PlusCircle } from "lucide-react";
+import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, Gamepad2 } from "lucide-react";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
-import { Id } from "../convex/_generated/dataModel";
-import { useRouter } from "next/navigation";
 
 const overviewRoutes = [
   { href: "/home", icon: Home, label: "Home" },
@@ -36,23 +32,13 @@ const toolRoutes = [
 ];
 
 const communityRoutes = [
+  { href: "/games", icon: Gamepad2, label: "Games" },
   { href: "/community", icon: Globe, label: "Community" },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const router = useRouter();
-
-  const chats = useQuery(api.messages.getChats, user ? { userId: user.id } : "skip");
-  const createChat = useMutation(api.messages.createChat);
-
-  const handleNewChat = async () => {
-    if (user) {
-      const newChatId = await createChat({ userId: user.id, title: "New Chat" });
-      router.push(`/chat/${newChatId}`);
-    }
-  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 bg-sidebar/50 backdrop-blur-xl">
@@ -71,9 +57,9 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">Overview</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-4 mb-2">Overview</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {overviewRoutes.map(r => (
@@ -82,7 +68,7 @@ export function AppSidebar() {
                     asChild
                     isActive={pathname === r.href}
                     tooltip={r.label}
-                    className="hover:bg-sidebar-accent/50 transition-colors"
+                    className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
                   >
                     <Link href={r.href}>
                       <r.icon className="w-4 h-4 opacity-70 group-hover:opacity-100" />
@@ -95,10 +81,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         
-        <SidebarSeparator className="mx-4 my-2 opacity-50" />
+        <SidebarSeparator className="mx-4 my-4 opacity-50" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">Wellness Tools</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-4 mb-2">Wellness Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
             <SidebarMenuItem>
@@ -106,7 +92,7 @@ export function AppSidebar() {
                     asChild
                     isActive={pathname?.startsWith(`/chat`)}
                     tooltip="AI Chat"
-                    className="hover:bg-sidebar-accent/50 transition-colors"
+                    className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
                   >
                     <Link href="/chat">
                       <Bot className="w-4 h-4 opacity-70 group-hover:opacity-100" />
@@ -114,36 +100,13 @@ export function AppSidebar() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              {chats?.map((chat: { _id: Id<"chats">; title: string }) => (
-                <SidebarMenuItem key={chat._id}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === `/chat/${chat._id}`}
-                    tooltip={chat.title}
-                    className="hover:bg-sidebar-accent/50 transition-colors"
-                  >
-                    <Link href={`/chat/${chat._id}`}>
-                      <span className="font-medium">{chat.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleNewChat}
-                  className="hover:bg-sidebar-accent/50 transition-colors"
-                >
-                  <PlusCircle className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                  <span className="font-medium">New Chat</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               {toolRoutes.map(r => (
                 <SidebarMenuItem key={r.label}>
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === r.href || pathname?.startsWith(`${r.href}/`)}
                     tooltip={r.label}
-                    className="hover:bg-sidebar-accent/50 transition-colors"
+                    className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
                   >
                     <Link href={r.href}>
                       <r.icon className="w-4 h-4 opacity-70 group-hover:opacity-100" />
@@ -156,10 +119,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator className="mx-4 my-2 opacity-50" />
+        <SidebarSeparator className="mx-4 my-4 opacity-50" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">Connect</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-4 mb-2">Connect</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
                {communityRoutes.map(r => (
@@ -168,7 +131,7 @@ export function AppSidebar() {
                     asChild
                     isActive={pathname === r.href}
                     tooltip={r.label}
-                    className="hover:bg-sidebar-accent/50 transition-colors"
+                    className="hover:bg-primary/10 hover:text-primary transition-colors duration-200 py-2"
                   >
                     <Link href={r.href}>
                       <r.icon className="w-4 h-4 opacity-70 group-hover:opacity-100" />

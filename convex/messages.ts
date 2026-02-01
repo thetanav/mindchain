@@ -1,5 +1,5 @@
 
-import { mutation, query } from "convex/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getChats = query({

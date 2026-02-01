@@ -25,13 +25,13 @@ export default function Page() {
             }
           >
             Real Tools for <br />
-            <span className="text-blue-600">Mental Wellness</span>
+            <span className="text-brand-uber">Mental Wellness</span>
           </h1>
           <p className="max-w-2xl mx-auto text-xl text-muted-foreground leading-relaxed">
             A complete suite of tools to support your journey. From AI-powered conversations to guided breathing and mood tracking, we're here for you.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-12 text-base" asChild>
+            <Button size="lg" className="bg-brand-uber hover:bg-brand-uber-dark text-white rounded-full px-8 h-12 text-base" asChild>
               <Link href="/chat">
                 <ArrowUpRight className="mr-2 h-5 w-5" />
                 Start Your Journey
@@ -61,8 +61,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <MessageCircle className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <MessageCircle className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">AI Companion</CardTitle>
                 </CardHeader>
@@ -77,8 +77,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <PenTool className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <PenTool className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">Smart Journaling</CardTitle>
                 </CardHeader>
@@ -93,8 +93,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <Wind className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <Wind className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">Calm Room</CardTitle>
                 </CardHeader>
@@ -109,8 +109,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <Users className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">Community Groups</CardTitle>
                 </CardHeader>
@@ -125,8 +125,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <Activity className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <Activity className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">Health Check-ins</CardTitle>
                 </CardHeader>
@@ -141,8 +141,8 @@ export default function Page() {
             <div>
               <Card className="h-full shadow-lg">
                 <CardHeader>
-                  <div className="p-3 w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                    <Brain className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 w-12 h-12 rounded-2xl bg-brand-uber/10 flex items-center justify-center mb-4">
+                    <Brain className="h-6 w-6 text-brand-uber" />
                   </div>
                   <CardTitle className="text-xl">Mood Tracking</CardTitle>
                 </CardHeader>
@@ -157,15 +157,15 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-blue-600 text-white">
+      <section className="py-24 px-4 bg-brand-uber text-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className={`text-4xl md:text-5xl font-bold mb-8 ${serif.className}`}>
             Ready to Prioritize Your Mind?
           </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-brand-uber/20 mb-10 max-w-2xl mx-auto">
             Join thousands of others who have found clarity and support through MindChain.
           </p>
-          <Button size="lg" variant="secondary" className="rounded-full px-8 h-12 text-blue-700 font-semibold" asChild>
+          <Button size="lg" variant="secondary" className="rounded-full px-8 h-12 text-brand-uber-dark font-semibold" asChild>
             <Link href="/chat">
               Get Started Now
             </Link>

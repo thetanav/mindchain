@@ -145,7 +145,7 @@
   }
   
   .glass-card {
-    @apply bg-background/60 backdrop-blur-md border border-border/50 shadow-lg transition-all duration-300;
+    @apply bg-background/80 backdrop-blur-md border border-border/60 shadow-lg transition-all duration-300;
   }
 }
 

@@ -1,9 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { gamify } from "./gamify";
-import { meditations } from "./meditation";
 import { cbtExercises } from "./cbt";
 import { challenges } from "./challenges";
+import { meditations } from "./meditation";
 
 export default defineSchema({
   users: defineTable({
@@ -25,7 +24,7 @@ export default defineSchema({
 
   checkins: defineTable({
     userId: v.string(),
-    answers: v.any(), // JSON of answers
+    answers: v.array(v.string()), // JSON of answers
     insight: v.string(),
     createdAt: v.number(),
   }).index("by_userId", ["userId"]),
@@ -42,7 +41,12 @@ export default defineSchema({
     content: v.string(),
     createdAt: v.number(),
   }).index("by_chatId", ["chatId"]),
-  gamify,
+  gamify: defineTable({
+    userId: v.string(),
+    points: v.number(),
+    badges: v.array(v.string()),
+    dailyQuests: v.array(v.object({ quest: v.string(), completed: v.boolean() })),
+  }).index("by_userId", ["userId"]),
   meditations,
   cbtExercises,
   challenges,

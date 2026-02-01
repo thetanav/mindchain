@@ -8,8 +8,13 @@
  * @module
  */
 
+import type * as cbt from "../cbt.js";
+import type * as challenges from "../challenges.js";
 import type * as checkins from "../checkins.js";
+import type * as gamify from "../gamify.js";
 import type * as journal from "../journal.js";
+import type * as meditation from "../meditation.js";
+import type * as messages from "../messages.js";
 import type * as users from "../users.js";
 
 import type {
@@ -19,8 +24,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cbt: typeof cbt;
+  challenges: typeof challenges;
   checkins: typeof checkins;
+  gamify: typeof gamify;
   journal: typeof journal;
+  meditation: typeof meditation;
+  messages: typeof messages;
   users: typeof users;
 }>;
 

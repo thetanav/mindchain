@@ -186,7 +186,27 @@ const config: Config = withUt({
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require('tailwindcss-brand-colors'), require('tailwind-heropatterns')({
+    // as per tailwind-heropatterns docs
+    variants: [],
+  
+    // the list of patterns you want to generate a class for
+    // the names must be in kebab-case
+    // an empty array will generate all 87 patterns
+    patterns: [],
+  
+    // The foreground colors of the patterns
+    colors: {
+      default: "#2f3136",
+      'primary': "#a5b4fc", // primary-300
+    },
+  
+    // The foreground opacity
+    opacity: {
+      default: '0.1',
+      '100': '1.0',
+    }
+  })],
 });
 
 export default config;

@@ -154,3 +154,27 @@ export const getStats = query({
     };
   },
 });
+
+export const getSentimentDistribution = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const entries = await ctx.db
+      .query("journal")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    const distribution = {
+      Positive: 0,
+      Neutral: 0,
+      Negative: 0,
+    };
+
+    for (const entry of entries) {
+      if (entry.sentiment && distribution.hasOwnProperty(entry.sentiment)) {
+        distribution[entry.sentiment as keyof typeof distribution]++;
+      }
+    }
+
+    return Object.entries(distribution).map(([name, value]) => ({ name, value }));
+  },
+});
