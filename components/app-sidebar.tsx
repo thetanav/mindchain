@@ -15,7 +15,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
-import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, BrainCircuit, LogIn, ListChecks, Gamepad2, Music2 } from "lucide-react";
+import { CircleCheck, Bot, Globe, Home, Album, AudioWaveform, LogIn, ListChecks, Gamepad2, Music2, Heart, Trophy } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
@@ -28,8 +29,10 @@ const toolRoutes = [
   { href: "/journal", icon: Album, label: "Journal" },
   { href: "/lofi", icon: Music2, label: "Lofi" },
   { href: "/relaxo", icon: AudioWaveform, label: "Relaxo" },
-  { href: "/todo", icon: ListChecks, label: "Todo" },
   { href: "/check", icon: CircleCheck, label: "Quiz" },
+  { href: "/meditation", icon: Heart, label: "Meditate" },
+  { href: "/challenges", icon: Trophy, label: "Challenges" },
+  { href: "/todo", icon: ListChecks, label: "Todo" },
 ];
 
 const communityRoutes = [
@@ -46,8 +49,8 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center justify-between px-2 py-4">
           <Link href="/" className="flex items-center gap-3 group-data-[collapsible=icon]:hidden transition-all">
-            <div className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
-               <BrainCircuit className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
+               <Image src="/logo.png" alt="Mindchain" width={32} height={32} className="object-cover w-full h-full" />
             </div>
             <h2 className="text-xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
               Mindchain

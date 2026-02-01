@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { DailyQuizDialog } from "@/components/daily-quiz-dialog";
+import { CheckinHeatmap } from "@/components/checkin-heatmap";
 import {
   Card,
   CardContent,
@@ -68,6 +69,7 @@ export default function DashboardPage() {
   const journalStats = useQuery(api.journal.getStats, user ? { userId: user.id } : "skip");
   const wellnessData = useQuery(api.checkins.getWellnessTrends, user ? { userId: user.id } : "skip");
   const sentimentData = useQuery(api.journal.getSentimentDistribution, user ? { userId: user.id } : "skip");
+  const heatmapData = useQuery(api.checkins.getHeatmapData, user ? { userId: user.id } : "skip");
 
   const streak = userData?.streak || 0;
   const coins = userData?.coins || 0;
@@ -212,6 +214,27 @@ export default function DashboardPage() {
             </Card>
 
             <Card>
+              <CardHeader>
+                <CardTitle className="font-serif text-lg">Activity Heatmap</CardTitle>
+                <CardDescription>Your daily check-in consistency</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {heatmapData && heatmapData.length > 0 ? (
+                  <CheckinHeatmap data={heatmapData} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="text-muted-foreground mb-2">No check-in data yet</div>
+                    <Button asChild size="sm" variant="outline">
+                      <Link href="/check">
+                        Start Check-in <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="font-serif text-lg">AI Companion</CardTitle>
                 <CardDescription>Feeling overwhelmed? I&apos;m here.</CardDescription>
@@ -220,20 +243,6 @@ export default function DashboardPage() {
                 <Button className="w-full" asChild>
                   <Link href="/chat">
                     Start Conversation <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="font-serif text-lg">Daily Check-in</CardTitle>
-                <CardDescription>Reflect on your day in 2 mins.</CardDescription>
-              </CardHeader>
-              <CardFooter className="pt-2">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/check">
-                    Begin Check-in <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardFooter>

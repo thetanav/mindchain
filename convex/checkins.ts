@@ -79,6 +79,77 @@ export const getWellnessTrends = query({
   },
 });
 
+export const hasCheckedInToday = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const checkins = await ctx.db
+      .query("checkins")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+    
+    // Check if there's a check-in today (after start of day)
+    const hasToday = checkins.some(checkin => checkin.createdAt >= startOfDay.getTime());
+    
+    return { hasCheckedIn: hasToday };
+  },
+});
+
+export const getHeatmapData = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const checkins = await ctx.db
+      .query("checkins")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .order("asc")
+      .collect();
+
+    // Get last 90 days of data
+    const today = new Date();
+    const heatmapData = [];
+    
+    for (let i = 89; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Find check-ins for this day
+      const dayCheckins = checkins.filter(c => 
+        new Date(c.createdAt).toISOString().split('T')[0] === dateStr
+      );
+      
+      let intensity = 0;
+      if (dayCheckins.length > 0) {
+        // Calculate average score for the day
+        const scores = dayCheckins.map(checkin => {
+          const answers = checkin.answers as string[];
+          const severities = answers.map((answer, index) => {
+            const options = questions[index]?.options ?? [];
+            const pos = Math.max(0, options.indexOf(answer));
+            const base = Math.min(Math.max(pos, 0), 3);
+            return base;
+          });
+          const avg = severities.reduce((a, b) => a + b, 0) / (severities.length || 1);
+          return 3 - avg;
+        });
+        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+        intensity = Math.round((avgScore / 3) * 100);
+      }
+      
+      heatmapData.push({
+        date: dateStr,
+        intensity,
+        hasData: dayCheckins.length > 0,
+      });
+    }
+    
+    return heatmapData;
+  },
+});
+
 // We need the questions here to calculate the score
 const questions = [
   { id: 1, text: "How have you been feeling emotionally over the past week?", options: ["Very good", "Good", "Neutral", "Not so good"] },

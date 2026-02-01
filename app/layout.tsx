@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: "Mindchain",
   description:
     "Secure, anonymous mental health support powered by blockchain technology",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

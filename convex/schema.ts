@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { cbtExercises } from "./cbt";
-import { challenges } from "./challenges";
+import { challenges, userChallenges } from "./challenges";
 import { meditations } from "./meditation";
 
 export default defineSchema({
@@ -50,4 +50,5 @@ export default defineSchema({
   meditations,
   cbtExercises,
   challenges,
+  userChallenges,
 });

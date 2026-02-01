@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -38,17 +40,18 @@ export function DailyQuizDialog() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      const today = new Date().toISOString().split("T")[0];
-      const lastQuizDate = localStorage.getItem("lastQuizDate");
-      const hasCompletedQuiz = localStorage.getItem("hasCompletedQuizToday") === today;
+  const checkinStatus = useQuery(
+    api.checkins.hasCheckedInToday,
+    user ? { userId: user.id } : "skip"
+  );
 
-      if (!hasCompletedQuiz) {
+  useEffect(() => {
+    if (user && checkinStatus !== undefined) {
+      if (!checkinStatus.hasCheckedIn) {
         setIsOpen(true);
       }
     }
-  }, [user]);
+  }, [user, checkinStatus]);
 
   const handleAnswer = (answer: string) => {
     const newAnswers = [...answers, answer];
@@ -57,7 +60,6 @@ export function DailyQuizDialog() {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      localStorage.setItem("hasCompletedQuizToday", new Date().toISOString().split("T")[0]);
       setIsOpen(false);
       router.push("/check");
     }
