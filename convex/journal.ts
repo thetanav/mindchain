@@ -144,13 +144,10 @@ export const getStats = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .collect();
       
-    // Calculate simple stats
-    // In a real app, you might want to aggregate this more efficiently
     const totalEntries = entries.length;
     
     return {
       totalEntries,
-      // You could add mood averages here
     };
   },
 });
@@ -161,7 +158,8 @@ export const getSentimentDistribution = query({
     const entries = await ctx.db
       .query("journal")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .collect();
+      .order("desc")
+      .take(50);
 
     const distribution = {
       Positive: 0,

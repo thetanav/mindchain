@@ -99,7 +99,7 @@ export default function DashboardPage() {
     if (user && isLoading && !useMockData) {
       const timer = setTimeout(() => {
         setUseMockData(true);
-      }, 2000);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [user, isLoading, useMockData]);
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Journal Streak
+                  Journal Streak (max)
                 </CardTitle>
                 <StatInfoDialog type="streak" />
               </div>
@@ -266,7 +266,13 @@ export default function DashboardPage() {
                 <CardDescription>Your recent emotional palette</CardDescription>
               </CardHeader>
               <CardContent className="h-[250px] flex items-center justify-center">
-                {displaySentimentData && displaySentimentData.length > 0 ? (
+                {sentimentData === undefined ? (
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                  </div>
+                ) : displaySentimentData && displaySentimentData.length > 0 ? (
                   <SummaryPieChart data={displaySentimentData} />
                 ) : (
                   <div className="text-center text-muted-foreground">No mood data yet.</div>

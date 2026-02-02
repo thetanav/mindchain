@@ -141,20 +141,7 @@ export default function ChallengesPage() {
   const today = new Date().getDate();
 
   return (
-    <div className="container py-8 max-w-6xl mx-auto px-6 relative">
-      <div className="absolute inset-0 bg-background/20 backdrop-blur-sm z-50 flex items-center justify-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center"
-        >
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl shadow-amber-500/25">
-            <Clock className="w-16 h-16 text-white mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-white font-serif mb-2">Coming Soon</h2>
-            <p className="text-white/60 text-sm mt-2">Stay tuned for exciting wellness challenges</p>
-          </div>
-        </motion.div>
-      </div>
+    <div className="container py-8 max-w-6xl mx-auto px-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -164,7 +151,7 @@ export default function ChallengesPage() {
           <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
             <Trophy className="w-6 h-6 text-white" />
           </div>
-          Wellness Challenges
+          Wellness Challenges <span className="text-amber-500">Coming Soon</span>
         </h1>
         <p className="text-muted-foreground mt-2 text-lg">
           Join community challenges to build healthy habits and earn rewards
